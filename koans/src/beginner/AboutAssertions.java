@@ -57,7 +57,7 @@ public class AboutAssertions {
         // Generally, when using an assertXXX methods, expectation is on the
         // left and it is best practice to use a String for the first arg
         // indication what has failed
-        assertEquals("The answer to 'life the universe and everything' should be 42", 42, __);
+        assertEquals("The answer to 'life the universe and everything' should be 42", 42, 42);
     }
 
     @Koan
