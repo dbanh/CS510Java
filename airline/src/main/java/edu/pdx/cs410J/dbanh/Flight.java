@@ -8,17 +8,20 @@ public class Flight extends AbstractFlight {
 	private String destination;
 	private String departureTime;
 	private String arrivalTime;
-	private String flightNumber;
+	private int number;
 	
   @Override
   public int getNumber() {
     return 42;
   }
+  
+  public void setNumber(int number) {
+	  this.number = number;
+  }
 
   @Override
   public String getSource() {
 	  return source;
-//    throw new UnsupportedOperationException("This method is not implemented yet");
   }
   
   public void setSource(String source) {
@@ -28,7 +31,6 @@ public class Flight extends AbstractFlight {
   @Override
   public String getDepartureString() {
 	  return departureTime;
-//    throw new UnsupportedOperationException("This method is not implemented yet");
   }
   
   public void setDepartureString(String departureTime) {
@@ -38,7 +40,6 @@ public class Flight extends AbstractFlight {
   @Override
   public String getDestination() {
 	  return destination;
-//    throw new UnsupportedOperationException("This method is not implemented yet");
   }
   
   public void setDestination(String destination) {
@@ -47,18 +48,10 @@ public class Flight extends AbstractFlight {
 
   @Override
   public String getArrivalString() {
-    throw new UnsupportedOperationException("This method is not implemented yet");
+    return arrivalTime;
   }
   
   public void setArrivalString(String arrivalTime) {
 	  this.arrivalTime = arrivalTime;
-  }
-
-  public String getFlightNumber() {
-	return flightNumber;
-  }
-
-  public void setFlightNumber(String flightNumber) {
-	this.flightNumber = flightNumber;
   }
 }
