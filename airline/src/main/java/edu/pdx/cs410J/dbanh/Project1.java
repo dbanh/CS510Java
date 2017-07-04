@@ -155,7 +155,7 @@ private static void printReadMe() {
 			+ "The Flight class consists of the flight number, source location, departure time, destination location, and arrival time\n"
 			+ "The application will read in from the command line the airline name, flight number, source location, departure date, departure time, destination, and arrival time\n"
 			+ "(as arguments in that order)\n"
-			+ "The user also has the ability to invoke two options: -print or -README\n"
+			+ "\nThe user also has the ability to invoke two options: -print or -README\n"
 			+ "-print will print a description of the new flight\n"
 			+ "-README will print a README for this project and exits without saving the flight(currently showing)\n"
 			+ "These options can be specified -before- the arguments and only one can be specified at a time.\n"
