@@ -1,5 +1,6 @@
 package edu.pdx.cs410J.dbanh;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -8,18 +9,20 @@ import edu.pdx.cs410J.AbstractFlight;
 
 public class Airline extends AbstractAirline {
 	
-	private List<AbstractFlight> flights;
+	private List<Flight> flights = new ArrayList<Flight>();
 	private String name;
 
 @Override
 public void addFlight(AbstractFlight arg0) {
 	// TODO Auto-generated method stub
-	flights.add(arg0);
-	
+}
+
+public void addFlight(Flight arg0) {
+	this.flights.add(arg0);
 }
 
 @Override
-public Collection getFlights() {
+public Collection<Flight> getFlights() {
 	// TODO Auto-generated method stub
 	return flights;
 }
@@ -31,6 +34,6 @@ public String getName() {
 }
 
 public void setName(String name) {
-	name = name;
+	this.name = name;
 }
 }

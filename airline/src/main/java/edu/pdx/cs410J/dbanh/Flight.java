@@ -47,8 +47,7 @@ public class Flight extends AbstractFlight {
 
   @Override
   public String getArrivalString() {
-	  return arrivalTime;
-//    throw new UnsupportedOperationException("This method is not implemented yet");
+    throw new UnsupportedOperationException("This method is not implemented yet");
   }
   
   public void setArrivalString(String arrivalTime) {
