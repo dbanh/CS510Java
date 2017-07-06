@@ -65,14 +65,14 @@ public class AboutAssertions {
         // Just because something is equal doesn't mean that it is the same.
         // It's only the same if the reference is the same.
         Object same = new Integer(1);
-        Object sameReference = __;
+        Object sameReference = same;
         assertSame(same, sameReference);
     }
 
     @Koan
     public void assertNotSameInstance() {
         Integer same = new Integer(1);
-        Integer sameReference = same;
+        Integer sameReference = new Integer(1);
         assertNotSame(same, sameReference);
     }
 }
