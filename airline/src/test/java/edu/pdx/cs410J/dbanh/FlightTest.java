@@ -15,8 +15,8 @@ public class FlightTest {
   @Test
   public void getArrivalStringNeedsToBeImplemented() {
     Flight flight = new Flight();
-    flight.setArrivalString("1/1/2017 1:11");
-    flight.getArrivalString();
+    flight.setArrivalDate("1/1/2017");
+    flight.setArrivalTime("1:11");
     assertThat(flight.getArrivalString(), is("1/1/2017 1:11"));
   }
 
@@ -44,20 +44,26 @@ public class FlightTest {
 	  flight.setNumber(number);
 	  String source = "PDX";
 	  flight.setSource(source);
-	  String departure = "1/1/2017 1:11";
-	  flight.setDepartureString(departure);
+	  String departureDate = "1/1/2017";
+	  flight.setDepartureDate(departureDate);
+	  String departureTime = "1:11";
+	  flight.setDepartureTime(departureTime);
 	  String destination = "LAX";
 	  flight.setDestination(destination);
-	  String arrival = "1/1/2017 3:11";
-	  flight.setArrivalString(arrival);
+	  String arrivalDate = "1/1/2017";
+	  flight.setArrivalDate(arrivalDate);
+	  String arrivalTime = "3:11";
+	  flight.setArrivalTime(arrivalTime);
 	  airline.addFlight(flight);
 	  
 	  assertThat(airline.getFlights(), is(notNullValue()));
 	  assertThat(airline.getName(), is(name));
 	  assertThat(flight.getNumber(), is(number));
 	  assertThat(flight.getSource(), is(source));
+	  String departure = new StringBuilder(departureDate).append(" ").append(departureTime).toString();
 	  assertThat(flight.getDepartureString(), is(departure));
 	  assertThat(flight.getDestination(), is(destination));
+	  String arrival = new StringBuilder(arrivalDate).append(" ").append(arrivalTime).toString();
 	  assertThat(flight.getArrivalString(), is(arrival));
   }
   

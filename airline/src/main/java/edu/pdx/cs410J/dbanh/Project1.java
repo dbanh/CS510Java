@@ -1,9 +1,6 @@
 package edu.pdx.cs410J.dbanh;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -11,6 +8,12 @@ import edu.pdx.cs410J.AbstractAirline;
 
 /**
  * The main class for the CS410J airline Project
+ * 
+ * Creates an airline and flight (which is added to the airline)
+ * If the -README option is invoked, the program will print out the README but will not run the rest of the program.
+ * The program will validate command line arguments according to the criteria specified and will display a list of errors if any validation errors occur.
+ * The program will not print the airline/flight details entered by the user (if the user enters valid arguments) unless the -print option is invoked.
+ * Options (-README and -print) MUST come before airline/flight arguments.
  */
 public class Project1 {
 
@@ -21,10 +24,10 @@ public class Project1 {
 		Flight flight = new Flight();
 		
 		if(args.length == 0) {
-			System.err.println("Missing command line arguments");
+			System.err.println("ERROR: Missing command line arguments");
 		}
 		
-		else if(args[0].equals("-README")) {
+		else if(args[0].toLowerCase().equals("-readme") || args[1].toLowerCase().equals("-readme")) {
 			printReadMe();
 		}
 		
@@ -32,7 +35,7 @@ public class Project1 {
 		    errorList = createAirlineAndFlight(args, airline, flight);
 		
 		    if(errorList.isEmpty()) {
-		    	if(args[0].equals("-print") || args[1].equals("-print")) {
+		    	if(args[0].toLowerCase().equals("-print") || args[1].toLowerCase().equals("-print")) {
 		    		Iterator<Flight> iterator = airline.getFlights().iterator();
 		    		while(iterator.hasNext()) {
 		    			System.out.println(iterator.next());
@@ -49,14 +52,16 @@ public class Project1 {
 		
 		else {
 			System.err.println("ERROR: Command line arguments not valid. Please check arguments and try again.");
-			System.err.println("Arguments: " + args.length);
 		    }
-	    
+
 	    System.exit(1);
 	  }
   
-	  /* INPUT: list of arguments from command line
-	   * OUTPUT: true if there are 8 arguments, false if any other value
+	  /**
+	   * Method checks to see if the number of arguments from the command line is 8 (the number of arguments necessary to create and airline and flight). 
+	   * Method will ignore arguments that are classified as "options". "Options" (-print & -README) will not be counted as part of the 8 arguments. 
+	   * @param arguments from the command line (includes "options" and "arguments"
+	   * @return true if the number of arguments in 8, false if there are more or less than 8 arguments
 	   */
 	 private static boolean correctNumberOfArgs(String [] args) {
 		 int argsCount = 0;
@@ -75,10 +80,10 @@ public class Project1 {
 		 }
 	 }
 
-	 /* INPUT: list of arguments from command line, an Airline object, and Flight object
-	  * OUTPUT: List of strings with any error messages from validation
-	  * The method parses the argument list from command line, validates each argument according to their type, and saves the values in the airline and flight objects
-	  * Arguments are expected in this order:
+	 /**
+	  * This method parses the list from the command line, ignoring any "options" (-print or -README). This method assumes that there is the correct number
+	  * of arguments necessary to save an airline and flight. The method performs validation on any argument with specific formats (see list below). Any validation
+	  * errors will be added to an error list and returned to the caller. Arguments are expected in this order and format:
 	  * 1 - -README or -print
 	  * 2 - -README or -print
 	  * 3 - Airline Name
@@ -89,6 +94,10 @@ public class Project1 {
 	  * 8 - Destination airport (3 character code)
 	  * 9 - Arrival date (MM/DD/YYYY)
 	  * 10 - Arrival time (HH:MM)
+	  * @param arguments from command line
+	  * @param Airline object
+	  * @param Flight object that will be added to the Airline object
+	  * @return list of validation errors (as Strings)
 	  */
 	private static List<String> createAirlineAndFlight(String[] args, Airline airline, Flight flight) {
 	
@@ -118,13 +127,21 @@ public class Project1 {
 				}
 			}
 			else if(i == startingPosition+3) {
-				String date = new StringBuilder(args[i]).append(" ").append(args[++i]).toString(); //concatenates date and time
-				SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM/DD/YYYY HH:MM");
-				try {
-					Date departureDate = simpleDateFormat.parse(date); //validates date/time is in correct format
-					flight.setDepartureString(date); //but uses the string value for now
-				} catch (ParseException e) {
-					errorList.add("ERROR: Destination time is not in the correct format. (Correct format: MM/DD/YYYY HH:MM)");
+				boolean valid = validateDate(args[i]);
+				if(valid == false) {
+					errorList.add("ERROR: Destination date is not in the correct format. (Correct format: MM/DD/YYYY)");
+				}
+				else {
+					flight.setDepartureDate(args[i]);
+				}
+			}
+			else if(i == startingPosition+4) {
+				boolean valid = validateTime(args[i]);
+				if(valid == false) {
+					errorList.add("ERROR: Destination time is not in the correct format. (Correct format: HH:MM)");
+				}
+				else {
+					flight.setDepartureTime(args[i]);
 				}
 			}
 			else if(i == startingPosition+5) {
@@ -136,19 +153,122 @@ public class Project1 {
 				}
 			}
 			else if(i == startingPosition+6) {
-				String date = new StringBuilder(args[i]).append(" ").append(args[++i]).toString(); //concatenates date and time
-				SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/YYYY hh:mm");
-				try {
-					Date arrivalDate = simpleDateFormat.parse(date); //validates date/time is in correct format
-					flight.setArrivalString(date); //but uses the string value for now
-				} catch (ParseException e) {
-					errorList.add("ERROR: Arrival time is not in the correct format. (Correct format: dd/MM/YYYY hh:mm)");
+				boolean valid = validateDate(args[i]);
+				if(valid == false) {
+					errorList.add("ERROR: Arrival date is not in the correct format. (Correct format: MM/DD/YYYY)");
+				}
+				else {
+					flight.setArrivalDate(args[i]);
+				}
+			}
+			else if(i == startingPosition+7) {
+				boolean valid = validateTime(args[i]);
+				if(valid == false) {
+					errorList.add("ERROR: Arrival time is not in the correct format. (Correct format: HH:MM)");
+				}
+				else {
+					flight.setArrivalTime(args[i]);
 				}
 			}
 		} 
 		airline.addFlight(flight);
 		
 		return errorList;
+	}
+
+	/**
+	 * This method validates the time string according to "HH:MM" format. The validation will accept single-digit hours but not single-digit minutes. For instance:
+	 * 1:11 is accepted
+	 * 12:12 is accepted
+	 * 2:2 is not accepted
+	 * 2 is not accepted
+	 * @param time string
+	 * @return true if time matches "HH:MM" format, false if it does not
+	 */
+	private static boolean validateTime(String time) {
+		String[] timeFields = time.split(":");
+		int hour;
+		int minutes;
+		
+		if(timeFields.length != 2)
+		{
+			return false;
+		}
+		
+		//validating the hours (HH)
+		try {
+    		hour = Integer.valueOf(timeFields[0]);
+    		if(hour > 24) {
+    			return false;
+    		}
+    	} catch (NumberFormatException e) {
+    		return false;
+    	}
+		
+		//validating the minutes (MM)
+		try {
+    		minutes = Integer.valueOf(timeFields[1]);
+    		if(minutes > 60) {
+    			return false;
+    		}
+    		
+    		if(minutes < 10) {
+    			//will not accept single-digit minutes. Must be two-digit, such as 02.
+    			if(timeFields[1].length() < 2) {
+    				return false; 
+    			}
+    		}
+    	} catch (NumberFormatException e) {
+    		return false;
+    	}
+			
+		return true;
+		
+	}
+
+	/**
+	 * This method validates the date string according to "MM/DD/YYYY" format. The validation will accept single-digit month and day values but not years less
+	 * than 4 digits. The method does not accept month values greater than 12 or day values greater than 31. For example: 
+	 * Accepted dates: 1/1/2001; 01/01/2001; 01/1/2001; 1/01/2001
+	 * Not accepted dates: 13/1/2001; 1/1/01; 1/32/2001
+	 * @param date string
+	 * @return true if date string matches MM/DD/YYYY format
+	 */
+	private static boolean validateDate(String date) {
+		
+		String[] dateFields = date.split("/");
+		int month;
+		int day;
+		
+		if(dateFields.length != 3) {
+			return false;
+		}
+		
+		try {
+    		month = Integer.valueOf(dateFields[0]);
+    	} catch (NumberFormatException e) {
+    		return false;
+    	}
+		
+		if(month > 12) {
+			return false;
+		}
+		
+		try {
+    		day = Integer.valueOf(dateFields[1]);
+    	} catch (NumberFormatException e) {
+    		return false;
+    	}
+		
+		if(day > 31) {
+			return false;
+		}
+		
+		if(dateFields[2].length() != 4) {
+			return false;
+		}
+		
+		return true;
 	}
 
 	private static void printReadMe() {
@@ -162,8 +282,8 @@ public class Project1 {
 				+ "(as arguments in that order)\n"
 				+ "\nThe user also has the ability to invoke two options: -print or -README\n"
 				+ "-print will print a description of the new flight\n"
-				+ "-README will print a README for this project and exits without saving the flight(currently showing)\n"
-				+ "These options can be specified -before- the arguments and only one can be specified at a time.\n"
+				+ "-README will print a README for this project and exits without saving the flight (currently viewing README)\n"
+				+ "These options can be specified -before- the arguments\n"
 				+ "\n----------------END README----------------\n");
 	}
 

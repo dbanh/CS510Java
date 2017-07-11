@@ -6,7 +6,9 @@ public class Flight extends AbstractFlight {
 	
 	private String source;
 	private String destination;
+	private String departureDate;
 	private String departureTime;
+	private String arrivalDate;
 	private String arrivalTime;
 	private int number;
 	
@@ -30,10 +32,10 @@ public class Flight extends AbstractFlight {
 
   @Override
   public String getDepartureString() {
-	  return departureTime;
+	  return new StringBuilder(departureDate).append(" ").append(departureTime).toString();
   }
   
-  public void setDepartureString(String departureTime) {
+  public void setDepartureTime(String departureTime) {
 	  this.departureTime = departureTime;
   }
 
@@ -48,10 +50,27 @@ public class Flight extends AbstractFlight {
 
   @Override
   public String getArrivalString() {
-    return arrivalTime;
+	  return new StringBuilder(arrivalDate).append(" ").append(arrivalTime).toString();
+
   }
   
-  public void setArrivalString(String arrivalTime) {
+  public void setArrivalTime(String arrivalTime) {
 	  this.arrivalTime = arrivalTime;
   }
+
+public String getDepartureDate() {
+	return departureDate;
+}
+
+public void setDepartureDate(String departureDate) {
+	this.departureDate = departureDate;
+}
+
+public String getArrivalDate() {
+	return arrivalDate;
+}
+
+public void setArrivalDate(String arrivalDate) {
+	this.arrivalDate = arrivalDate;
+}
 }
