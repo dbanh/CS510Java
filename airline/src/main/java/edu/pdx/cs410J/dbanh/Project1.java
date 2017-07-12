@@ -27,7 +27,7 @@ public class Project1 {
 			System.err.println("ERROR: Missing command line arguments");
 		}
 		
-		else if(args[0].toLowerCase().equals("-readme") || args[1].toLowerCase().equals("-readme")) {
+		else if(containsReadMe(args) == true) {
 			printReadMe();
 		}
 		
@@ -56,19 +56,57 @@ public class Project1 {
 
 	    System.exit(1);
 	  }
+	  
+	  /**
+	   * Method checks to see if -README was invoked as one of the options. Options will only be accepted before the airline/flight arguments. The method 
+	   * will immediately return false once an argument without a '-' is encountered (this assumes that airline/flight arguments will not begin with a '-').
+	   * @param arguments from command line
+	   * @return true if one of the arguments classified as "options" is -README, otherwise return false
+	   */
+	  
+	  private static boolean containsReadMe(String [] args) {
+		  for(int i = 0; i < args.length; ++i) {
+			  if(args[i].toLowerCase().equals("-readme")) {
+				  return true;
+			  }
+			  if(args[i].charAt(0) != '-') {
+				  return false;
+			  }
+		  }
+		  
+		  return false;
+	  }
   
 	  /**
 	   * Method checks to see if the number of arguments from the command line is 8 (the number of arguments necessary to create and airline and flight). 
-	   * Method will ignore arguments that are classified as "options". "Options" (-print & -README) will not be counted as part of the 8 arguments. 
+	   * Arguments that are classified as "options" (-print and -README) will not be counted as part of the 8 arguments. But the method will verify that options
+	   * appear before airline/flight arguments. This method assumes that any argument that begins with a '-' is an option and not an airline/flight argument.
 	   * @param arguments from the command line (includes "options" and "arguments"
-	   * @return true if the number of arguments in 8, false if there are more or less than 8 arguments
+	   * @return true if the number of arguments in 8 (not including options), false if there are more or less than 8 arguments (not including options)
 	   */
 	 private static boolean correctNumberOfArgs(String [] args) {
 		 int argsCount = 0;
-		 
+		 int optionsCount = 0;
+
 		 for(int i = 0; i < args.length; ++i) {
 			 if(args[i].charAt(0) != '-') {
 				 ++argsCount;
+			 }
+			 else {
+				 //verify options are either -print or -README
+				 if(args[i].equals("-print") || args[i].equals("-README")) {
+					 ++optionsCount;
+					 
+					 //if options are not listed before airline/flight arguments, return failed validation
+					 //i would be equal to optionsCount if options are before arguments
+					 if(i > argsCount && i > optionsCount) {
+						 return false;
+					 }
+				 }
+				 //if argument is not -print or -README, assume they are a part of the airline/flight arguments
+				 else {
+					 ++argsCount;
+				 }
 			 }
 		 }
 		 
