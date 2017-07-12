@@ -35,7 +35,7 @@ public class Project1 {
 		    errorList = createAirlineAndFlight(args, airline, flight);
 		
 		    if(errorList.isEmpty()) {
-		    	if(args[0].toLowerCase().equals("-print") || args[1].toLowerCase().equals("-print")) {
+		    	if(args[0].equals("-print") || args[1].equals("-print")) {
 		    		Iterator<Flight> iterator = airline.getFlights().iterator();
 		    		while(iterator.hasNext()) {
 		    			System.out.println(iterator.next());
@@ -66,7 +66,7 @@ public class Project1 {
 	  
 	  private static boolean containsReadMe(String [] args) {
 		  for(int i = 0; i < args.length; ++i) {
-			  if(args[i].toLowerCase().equals("-readme")) {
+			  if(args[i].equals("-README")) {
 				  return true;
 			  }
 			  if(args[i].charAt(0) != '-') {
