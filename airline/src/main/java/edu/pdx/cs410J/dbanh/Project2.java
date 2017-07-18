@@ -1,10 +1,14 @@
 package edu.pdx.cs410J.dbanh;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import edu.pdx.cs410J.AbstractAirline;
+import edu.pdx.cs410J.AbstractFlight;
+import edu.pdx.cs410J.ParserException;
 
 /**
  * The main class for the CS410J airline Project
@@ -15,12 +19,12 @@ import edu.pdx.cs410J.AbstractAirline;
  * The program will not print the airline/flight details entered by the user (if the user enters valid arguments) unless the -print option is invoked.
  * Options (-README and -print) MUST come before airline/flight arguments.
  */
-public class Project1 {
+public class Project2 {
 
 	  public static void main(String[] args) {
 	    Class c = AbstractAirline.class;  // Refer to one of Dave's classes so that we can be sure it is on the classpath
 		List<String> errorList = new ArrayList<String>();
-		Airline airline = new Airline();
+		Airline airline = new Airline("Alaska");
 		Flight flight = new Flight();
 		
 		if(args.length == 0) {
@@ -35,8 +39,54 @@ public class Project1 {
 		    errorList = createAirlineAndFlight(args, airline, flight);
 		
 		    if(errorList.isEmpty()) {
-		    	if(args[0].equals("-print") || args[1].equals("-print")) {
-		    		Iterator<Flight> iterator = airline.getFlights().iterator();
+		    	if(containsTextFile(args)) {
+		    		
+		    		String fileName = "";
+		    		for(int i = 0; i < args.length; ++i) {
+		    			if(args[i].equals("-textFile")) {
+		    				fileName = args[i+1];
+		    				break;
+		    			}
+		    		}
+		    		
+		    		File file = null;
+		    		boolean fileExists = false;
+		    		
+		    		file = new File(fileName);
+		    		fileExists = file.exists();
+					TextDumper textDumper = new TextDumper(fileName);
+		    		
+		    		if (fileExists) {
+						TextParser textParser = new TextParser(fileName);
+						AbstractAirline airlineFromFile;
+						try {
+							airlineFromFile = textParser.parse();
+							if (airlineFromFile.getName().toLowerCase().equals(airline.getName().toLowerCase())) {
+								airlineFromFile.addFlight(flight);
+								textDumper.dump(airlineFromFile);
+							}
+							else {
+								System.err.println("ERROR: Airline entered does not match airline listed in " + fileName);
+							}
+						} catch (ParserException e) {
+							System.err.println("ERROR: Problem reading from " + fileName + ". Please check file.");
+						} catch (IOException e) {
+							System.err.println("ERROR: Problem adding flight to " + fileName);
+						} 
+					}
+		    		
+		    		else {
+		    			try {
+							textDumper.dump(airline);
+						} catch (IOException e) {
+							System.err.println("ERROR: Problem saving flight to " + fileName);
+						}
+		    		}
+
+		    	}
+		    	
+		    	if(containsPrint(args)) {
+		    		Iterator<AbstractFlight> iterator = airline.getFlights().iterator();
 		    		while(iterator.hasNext()) {
 		    			System.out.println(iterator.next());
 		    		}
@@ -58,7 +108,7 @@ public class Project1 {
 	  }
 	  
 	  /**
-	   * Method checks to see if -README was invoked as one of the options. Options will only be accepted before the airline/flight arguments. The method 
+	   * Method checks to see if -README is invoked as one of the options. Options will only be accepted before the airline/flight arguments. The method 
 	   * will immediately return false once an argument without a '-' is encountered (this assumes that airline/flight arguments will not begin with a '-').
 	   * @param arguments from command line
 	   * @return true if one of the arguments classified as "options" is -README, otherwise return false
@@ -67,6 +117,46 @@ public class Project1 {
 	  private static boolean containsReadMe(String [] args) {
 		  for(int i = 0; i < args.length; ++i) {
 			  if(args[i].equals("-README")) {
+				  return true;
+			  }
+			  if(args[i].charAt(0) != '-') {
+				  return false;
+			  }
+		  }
+		  
+		  return false;
+	  }
+	  
+	  /**
+	   * Method checks to see if -print is invoked as one of the options. Options will only be accepted before the airline/flight arguments. The method 
+	   * will immediately return false once an argument without a '-' is encountered (this assumes that airline/flight arguments will not begin with a '-').
+	   * @param arguments from command line
+	   * @return true if one of the arguments classified as "options" is -print, otherwise return false
+	   */
+	  
+	  private static boolean containsPrint(String [] args) {
+		  for(int i = 0; i < args.length; ++i) {
+			  if(args[i].equals("-print")) {
+				  return true;
+			  }
+			  if(args[i].charAt(0) != '-') {
+				  return false;
+			  }
+		  }
+		  
+		  return false;
+	  }
+	  
+	  /**
+	   * Method checks to see if -textFile is invoked as one of the options. Options will only be accepted before the airline/flight arguments. The method 
+	   * will immediately return false once an argument without a '-' is encountered (this assumes that airline/flight arguments will not begin with a '-').
+	   * @param arguments from command line
+	   * @return true if one of the arguments classified as "options" is -textFile, otherwise return false
+	   */
+	  
+	  private static boolean containsTextFile(String [] args) {
+		  for(int i = 0; i < args.length; ++i) {
+			  if(args[i].equals("-textFile")) {
 				  return true;
 			  }
 			  if(args[i].charAt(0) != '-') {
@@ -93,7 +183,7 @@ public class Project1 {
 				 ++argsCount;
 			 }
 			 else {
-				 //verify options are either -print or -README
+				 //verify options are -print, -textFile, or -README
 				 if(args[i].equals("-print") || args[i].equals("-README")) {
 					 ++optionsCount;
 					 
@@ -103,7 +193,18 @@ public class Project1 {
 						 return false;
 					 }
 				 }
-				 //if argument is not -print or -README, assume they are a part of the airline/flight arguments
+				 else if(args[i].equals("-textFile")){
+					 ++optionsCount;
+					 ++i;
+					 
+					 //if options are not listed before airline/flight arguments, return failed validation
+					 //i would be equal to optionsCount if options are before arguments
+					 if(i > argsCount && i > optionsCount) {
+						 return false;
+					 }
+				 }
+				 //if argument is not -print, -README, -textFile, or a filename directly proceeding -textFile, 
+				 //assume they are a part of the airline/flight arguments
 				 else {
 					 ++argsCount;
 				 }

@@ -17,8 +17,8 @@
   <developers>
     <developer>
       <id>YOU</id>
-      <name>Your name here</name>
-      <email>you@youremail.com</email>
+      <name>Denise Banh</name>
+      <email>dbanh@pdx.edu</email>
       <url>http://www.cs.pdx.edu/~YOU</url>
       <organization>PSU Department of Computer Science</organization>
       <organizationUrl>http://www.cs.pdx.edu</organizationUrl>
@@ -72,7 +72,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>edu.pdx.cs410J.dbanh.Project1</mainClass>
+              <mainClass>edu.pdx.cs410J.dbanh.Project2</mainClass>
             </manifest>
           </archive>
         </configuration>

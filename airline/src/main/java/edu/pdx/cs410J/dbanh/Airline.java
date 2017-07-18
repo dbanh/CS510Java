@@ -9,20 +9,24 @@ import edu.pdx.cs410J.AbstractFlight;
 
 public class Airline extends AbstractAirline {
 	
-	private List<Flight> flights = new ArrayList<Flight>();
+	private List<AbstractFlight> flights = new ArrayList<AbstractFlight>();
 	private String name;
 
+	public Airline(String name) {
+		this.name = name;
+	}
+	
 @Override
 public void addFlight(AbstractFlight arg0) {
-	// TODO Auto-generated method stub
-}
-
-public void addFlight(Flight arg0) {
 	this.flights.add(arg0);
 }
 
+//public void addFlight(Flight arg0) {
+//	this.flights.add(arg0);
+//}
+
 @Override
-public Collection<Flight> getFlights() {
+public Collection<AbstractFlight> getFlights() {
 	// TODO Auto-generated method stub
 	return flights;
 }
@@ -36,4 +40,5 @@ public String getName() {
 public void setName(String name) {
 	this.name = name;
 }
+
 }

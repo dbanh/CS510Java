@@ -10,7 +10,8 @@ import java.util.Iterator;
 /**
  * Unit tests for the {@link Flight} class.
  */
-public class FlightTest {
+public class TextDumperTest {
+	
   
   @Test
   public void getArrivalStringNeedsToBeImplemented() {
@@ -38,7 +39,7 @@ public class FlightTest {
 	  String name = "Alaska Airlines";
 	  Airline airline = new Airline(name);
 	  Flight flight = new Flight();
-
+	  
 	  int number = 42;
 	  flight.setNumber(number);
 	  String source = "PDX";
