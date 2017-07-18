@@ -53,8 +53,6 @@ public class TextDumper implements AirlineDumper {
 				bufferedWriter.newLine();
 				bufferedWriter.newLine();
 			}
-			
-			System.out.println("SUCCESS: Wrote airline out to file.");
 		}
 		catch(IOException e){
 			System.err.println("ERROR: Writing to file failed.");

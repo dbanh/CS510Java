@@ -102,9 +102,10 @@ public class Project2 {
 		
 		else {
 			System.err.println("ERROR: Command line arguments not valid. Please check arguments and try again.");
+			System.exit(1);
 		    }
 
-	    System.exit(1);
+	    System.exit(0);
 	  }
 	  
 	  /**
