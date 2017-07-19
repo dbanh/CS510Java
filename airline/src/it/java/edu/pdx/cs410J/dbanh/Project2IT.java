@@ -82,4 +82,96 @@ public class Project2IT extends InvokeMainTestCase {
 	    assertThat(fileContents, containsString("123"));
 	    assertThat(fileContents, containsString("234"));
 	  }
+	  
+	  @Test
+	  public void testAddFlightToExistingAirlineFileThatDoesNotMatchAirline() throws FileNotFoundException {
+	    assertThat(airlineFile.exists(), equalTo(true));
+
+	    MainMethodResult result =
+	      invokeProject2("-textFile", airlineFile.getAbsolutePath(), "NotMyAirline",
+	        "234", "PDX", "7/17/2017", "15:00", "LAX", "7/17/2017", "18:00");
+	    assertThat(result.getExitCode(), equalTo(0));
+
+	    assertThat(result.getTextWrittenToStandardError(), containsString("Airline entered does not match airline listed in"));
+	  }
+	  
+	  @Test
+	  public void testFileNameNotIncluded() throws FileNotFoundException {
+	    assertThat(airlineFile.exists(), equalTo(true));
+
+	    MainMethodResult result =
+	      invokeProject2("-textFile", "NotMyAirline",
+	        "234", "PDX", "7/17/2017", "15:00", "LAX", "7/17/2017", "18:00");
+	    assertThat(result.getExitCode(), equalTo(0));
+
+	    assertThat(result.getTextWrittenToStandardError(), containsString("Valid filename not entered."));
+	  }
+	  
+	  /**
+	   * Tests that invoking the main method with no arguments issues an error
+	   */
+	  @Test
+	  public void testNoCommandLineArguments() {
+	    MainMethodResult result = invokeProject2();
+	    assertThat(result.getExitCode(), equalTo(0));
+	    assertThat(result.getTextWrittenToStandardError(), containsString("Missing command line arguments"));
+	  }
+	  
+	  /**
+	   * Tests that invoking the main method with not enough arguments issues an error
+	   */
+	  @Test
+	  public void testNotEnoughArguments() {
+	    MainMethodResult result = invokeProject2("United", "42", "ABC");
+	    assertThat(result.getExitCode(), equalTo(0));
+	    assertThat(result.getTextWrittenToStandardError(), containsString("Command line arguments not valid"));
+	  }
+	  
+	  /**
+	   * Tests that invoking the main method with too many arguments issues an error
+	   */
+	  @Test
+	  public void testTooManyArguments() {
+	    MainMethodResult result = invokeProject2("United", "42", "ABC", "01/01/2001", "1:11", "PDX", "03/03/2003", "3:33", "ABCD");
+	    assertThat(result.getExitCode(), equalTo(0));
+	    assertThat(result.getTextWrittenToStandardError(), containsString("Command line arguments not valid."));
+	  }
+
+	  /**
+	   * Tests that invoking the main method with -README prints out readme
+	   */
+	  @Test
+	  public void testReadme() {
+	    MainMethodResult result = invokeProject2("-README", "United", "42", "ABC", "01/01/2001", "1:11", "PDX", "03/03/2003", "3:33");
+	    assertThat(result.getExitCode(), equalTo(0));
+	    assertThat(result.getTextWrittenToStandardOut(), containsString("README"));
+	    
+	    MainMethodResult result2 = invokeProject2("-print", "-README", "-textFile", "test.txt", "United", "42", "ABC", "01/01/2001", "1:11", "PDX", "03/03/2003", "3:33");
+	    assertThat(result2.getExitCode(), equalTo(0));
+	    assertThat(result2.getTextWrittenToStandardOut(), containsString("README"));
+	  }
+	  
+	  /**
+	   * Tests that invoking the main method with -print prints out flight info
+	   */
+	  @Test
+	  public void testPrint() {
+	    MainMethodResult result = invokeProject2("-print", "United", "42", "ABC", "01/01/2001", "1:11", "PDX", "03/03/2003", "3:33");
+	    assertThat(result.getExitCode(), equalTo(0));
+	    assertThat(result.getTextWrittenToStandardOut(), containsString("Flight 42 departs ABC"));
+	  }
+	  
+	  /**
+	   * Tests airport codes
+	   */
+	  @Test
+	  public void testAirportCodeNotValid() {
+		  MainMethodResult result = invokeProject2("-print", "United", "42", "AB1", "01/01/2001", "1:11", "PDX", "03/03/2003", "3:33");
+		    assertThat(result.getExitCode(), equalTo(0));
+		    assertThat(result.getTextWrittenToStandardError(), containsString("airport code is not valid."));
+		    
+		  MainMethodResult result2 = invokeProject2("-print", "United", "42", "ABC", "01/01/2001", "1:11", "PDXW", "03/03/2003", "3:33");
+		    assertThat(result2.getExitCode(), equalTo(0));
+		    assertThat(result2.getTextWrittenToStandardError(), containsString("airport code is not valid."));
+  }
 }

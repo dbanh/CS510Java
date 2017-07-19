@@ -17,7 +17,12 @@ import edu.pdx.cs410J.ParserException;
  * If the -README option is invoked, the program will print out the README but will not run the rest of the program.
  * The program will validate command line arguments according to the criteria specified and will display a list of errors if any validation errors occur.
  * The program will not print the airline/flight details entered by the user (if the user enters valid arguments) unless the -print option is invoked.
- * Options (-README and -print) MUST come before airline/flight arguments.
+ * The -textFile option will takethe specified file name (to be passed in as an argument right after the -textFile option), and check to see if the file
+ * exists. If it does exist, the program will parse the contents of the file and save the contents in an airline object (with flights). Each file contains 
+ * just one airline and its flights. If the new airline matches the airline in the file, the program will add the new flight and write the airline and 
+ * flights back to the file. If the file does not exist, the program will create the file and save the new airline into the file.
+ * 
+ * Options (-README, -textFile, and -print) MUST come before airline/flight arguments. And the filename MUST come directly after -textFile.
  */
 public class Project2 {
 
@@ -49,39 +54,24 @@ public class Project2 {
 		    			}
 		    		}
 		    		
-		    		File file = null;
-		    		boolean fileExists = false;
-		    		
-		    		file = new File(fileName);
-		    		fileExists = file.exists();
-					TextDumper textDumper = new TextDumper(fileName);
-		    		
-		    		if (fileExists) {
-						TextParser textParser = new TextParser(fileName);
-						AbstractAirline airlineFromFile;
-						try {
-							airlineFromFile = textParser.parse();
-							if (airlineFromFile.getName().toLowerCase().equals(airline.getName().toLowerCase())) {
-								airlineFromFile.addFlight(flight);
-								textDumper.dump(airlineFromFile);
+		    		if (fileName.contains(".txt")) {
+						File file = null;
+						boolean fileExists = false;
+						file = new File(fileName);
+						fileExists = file.exists();
+						TextDumper textDumper = new TextDumper(fileName);
+						if (fileExists) {
+							parseFile(airline, flight, fileName, textDumper);
+						}
+
+						else {
+							try {
+								textDumper.dump(airline);
+							} catch (IOException e) {
+								System.err.println("ERROR: Problem saving flight to " + fileName);
 							}
-							else {
-								System.err.println("ERROR: Airline entered does not match airline listed in " + fileName);
-							}
-						} catch (ParserException e) {
-							System.err.println("ERROR: Problem reading from " + fileName + ". Please check file.");
-						} catch (IOException e) {
-							System.err.println("ERROR: Problem adding flight to " + fileName);
 						} 
 					}
-		    		
-		    		else {
-		    			try {
-							textDumper.dump(airline);
-						} catch (IOException e) {
-							System.err.println("ERROR: Problem saving flight to " + fileName);
-						}
-		    		}
 
 		    	}
 		    	
@@ -102,11 +92,42 @@ public class Project2 {
 		
 		else {
 			System.err.println("ERROR: Command line arguments not valid. Please check arguments and try again.");
-			System.exit(1);
 		    }
 
 	    System.exit(0);
 	  }
+
+	  
+	/**
+	 * This method parses the contents of a file (fileName) and saves the contents in an airline object (including flights). If the airline name in the file
+	 * matches the new airline name, the method will add the new flight to the airline and write it to the same file (via dump). If it does not match, the system
+	 * will display and error. 
+	 * @param airline
+	 * @param flight
+	 * @param fileName
+	 * @param textDumper
+	 */
+	private static void parseFile(Airline airline, Flight flight, String fileName, TextDumper textDumper) {
+		TextParser textParser = new TextParser(fileName);
+		AbstractAirline airlineFromFile;
+		try {
+			airlineFromFile = textParser.parse();
+			if(airlineFromFile == null) {
+				System.err.println("ERROR: Airline not saved to file");
+			}
+			else if (airlineFromFile.getName().toLowerCase().equals(airline.getName().toLowerCase())) {
+				airlineFromFile.addFlight(flight);
+				textDumper.dump(airlineFromFile);
+			} 
+			else  {
+				System.err.println("ERROR: Airline entered does not match airline listed in " + fileName);
+			}
+		} catch (ParserException e) {
+			System.err.println("ERROR: Problem reading from " + fileName + ". Please check file.");
+		} catch (IOException e) {
+			System.err.println("ERROR: Problem adding flight to " + fileName);
+		}
+	}
 	  
 	  /**
 	   * Method checks to see if -README is invoked as one of the options. Options will only be accepted before the airline/flight arguments. The method 
@@ -170,8 +191,9 @@ public class Project2 {
   
 	  /**
 	   * Method checks to see if the number of arguments from the command line is 8 (the number of arguments necessary to create and airline and flight). 
-	   * Arguments that are classified as "options" (-print and -README) will not be counted as part of the 8 arguments. But the method will verify that options
-	   * appear before airline/flight arguments. This method assumes that any argument that begins with a '-' is an option and not an airline/flight argument.
+	   * Arguments that are classified as "options" (-print, -textFile, and -README) will not be counted as part of the 8 arguments. But the method will verify that options
+	   * appear before airline/flight arguments. This method assumes that any argument that begins with a '-' is an option and not an airline/flight argument. 
+	   * It will also check that the argument immediately proceeding -textFile is a text file.
 	   * @param arguments from the command line (includes "options" and "arguments"
 	   * @return true if the number of arguments in 8 (not including options), false if there are more or less than 8 arguments (not including options)
 	   */
@@ -196,7 +218,13 @@ public class Project2 {
 				 }
 				 else if(args[i].equals("-textFile")){
 					 ++optionsCount;
-					 ++i;
+			    	if (args[i+1].contains(".txt")) {
+						 ++i;
+			    	}
+			    	else {
+		    			System.err.println("ERROR: Valid filename not entered. Filename must come after -textFile option and must be in .txt format");
+			    	}
+
 					 
 					 //if options are not listed before airline/flight arguments, return failed validation
 					 //i would be equal to optionsCount if options are before arguments
@@ -259,11 +287,11 @@ public class Project2 {
 		    	} 
 			}
 			else if( i == startingPosition+2) {
-				if(args[i].length() == 3) {
+				if(validateAirportCode(args[i])) {
 					flight.setSource(args[i]);
 				}
 				else {
-					errorList.add("ERROR: Source airport code is not 3 characters");
+					errorList.add("ERROR: Source airport code is not valid. Valid codes are 3 characters long and only contains letters.");
 				}
 			}
 			else if(i == startingPosition+3) {
@@ -285,11 +313,11 @@ public class Project2 {
 				}
 			}
 			else if(i == startingPosition+5) {
-				if(args[i].length() == 3) {
+				if(validateAirportCode(args[i])) {
 					flight.setDestination(args[i]);
 				}
 				else {
-					errorList.add("ERROR: Destination airport code is not 3 characters");
+					errorList.add("ERROR: Destination airport code is not valid. Valid codes are 3 characters long and only contains letters.");
 				}
 			}
 			else if(i == startingPosition+6) {
@@ -314,6 +342,22 @@ public class Project2 {
 		airline.addFlight(flight);
 		
 		return errorList;
+	}
+	
+	/**
+	 * This method checks to see if the airport code entered is a valid code. It is valid if it is exactly 3 characters long and only contains letters.
+	 * This method does not check that the airport code is a "real" airport code. 
+	 * @param airportCode
+	 * @return true if the airport code passed in is valid, false otherwise
+	 */
+	private static boolean validateAirportCode(String airportCode) {
+		if(airportCode.length() != 3) {
+			return false;
+		}
+		if(airportCode.matches(".*\\d+.*")) {
+			return false;
+		}
+		return true; 
 	}
 
 	/**
@@ -411,18 +455,26 @@ public class Project2 {
 		return true;
 	}
 
+	/**
+	 * Displays the read me text
+	 */
 	private static void printReadMe() {
 		System.out.println("\n------------------README------------------\n");
 		System.out.println("DENISE BANH\nCS510 | ADVANCED PROGRAMMING WITH JAVA");
-		System.out.println("PROJECT 1: BEGINNING A JAVA APPLICATION\n");
+		System.out.println("PROJECT 2: WORKING WITH FILES\n");
 		System.out.println("This application contains classes that will track an airline as well as flights for the airline.\n"
 				+ "The Airline class consists of the airline's name and a List of Flight(s).\n"
 				+ "The Flight class consists of the flight number, source location, departure time, destination location, and arrival time\n"
 				+ "The application will read in from the command line the airline name, flight number, source location, departure date, departure time, destination, and arrival time\n"
 				+ "(as arguments in that order)\n"
-				+ "\nThe user also has the ability to invoke two options: -print or -README\n"
-				+ "-print will print a description of the new flight\n"
-				+ "-README will print a README for this project and exits without saving the flight (currently viewing README)\n"
+				+ "\nThe user also has the ability to invoke three options: -print, -README, or -textFile\n"
+				+ "1) -print will print a description of the new flight\n"
+				+ "2) -README will print a README for this project and exits without saving the flight (currently viewing README)\n"
+				+ "3) -textFile will take the specified file name (to be passed in as an argument right after the -textFile option), and check to see if the file\n"
+				+ "exists. If it does exist, the program will parse the contents of the file and save the contents in an airline object (with flights).\n"
+				+ "Each file contains just one airline and its flights. If the new airline matches the airline in the file, the program will add the new flight\n"
+				+ "and write the airline and flights back to the file. If the file does not exist, the program will create the file and save the new airline\n"
+				+ "into the file.\n"
 				+ "These options can be specified -before- the arguments\n"
 				+ "\n----------------END README----------------\n");
 	}

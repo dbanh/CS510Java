@@ -1,25 +1,51 @@
 package edu.pdx.cs410J.dbanh;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import edu.pdx.cs410J.AbstractAirline;
 import edu.pdx.cs410J.AbstractFlight;
 import edu.pdx.cs410J.AirlineDumper;
 
+
+/**
+ * This class takes in a file name (via constructor) and an airline object (via the dump method). The sole 
+ * purpose of this class is to write out an airline object and its flights to a file.
+ * @author Denise
+ *
+ */
 public class TextDumper implements AirlineDumper {
 	
 	private String fileName;
+	
+	/**
+	 * The constructor takes in the name of the file where the airline/flight data will be saved
+	 * @param fileName
+	 */
 	
 	public TextDumper(String fileName) {
 		this.fileName = fileName;
 	}
 
+	/**
+	 * This method will take in an airline object and writes the airline name, and all flights out to a file. 
+	 * The format will be:
+	 * <BEGINNING OF FILE>
+	 * AIRLINE NAME
+	 * 
+	 * Flight number - 
+	 * Source - 
+	 * Departure time - 
+	 * Destination - 
+	 * Arrival Time -
+	 * <END OF FILE>
+	 * 
+	 * The airline name and flights are each separated by a newline
+	 * @param an airline object
+	 */
 	@Override
 	public void dump(AbstractAirline arg0) throws IOException {
 		
