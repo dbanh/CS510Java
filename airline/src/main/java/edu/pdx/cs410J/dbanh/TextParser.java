@@ -175,7 +175,6 @@ public class TextParser implements AirlineParser {
 		if(key.equals("Arrival time")) {
 			String[] dateTime = value.split(" ");
 			if(validateDate(dateTime[0]) && validateTime(dateTime[1])) {
-				System.out.println("VALID");
 				flight.setArrivalDate(dateTime[0]);
 				flight.setArrivalTime(dateTime[1]);
 				success = true;
