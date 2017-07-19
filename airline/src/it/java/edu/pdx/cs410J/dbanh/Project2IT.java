@@ -159,6 +159,10 @@ public class Project2IT extends InvokeMainTestCase {
 	    MainMethodResult result = invokeProject2("-print", "United", "42", "ABC", "01/01/2001", "1:11", "PDX", "03/03/2003", "3:33");
 	    assertThat(result.getExitCode(), equalTo(0));
 	    assertThat(result.getTextWrittenToStandardOut(), containsString("Flight 42 departs ABC"));
+	    
+	    MainMethodResult result2 = invokeProject2("-textFile", "text.txt", "-print", "United", "42", "ABC", "01/01/2001", "1:11", "PDX", "03/03/2003", "3:33");
+	    assertThat(result2.getExitCode(), equalTo(0));
+	    assertThat(result2.getTextWrittenToStandardOut(), containsString("Flight 42 departs ABC"));
 	  }
 	  
 	  /**

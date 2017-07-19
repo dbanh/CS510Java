@@ -161,7 +161,7 @@ public class Project2 {
 			  if(args[i].equals("-print")) {
 				  return true;
 			  }
-			  if(args[i].charAt(0) != '-') {
+			  if(args[i].charAt(0) != '-' && !args[i].contains(".txt")) {
 				  return false;
 			  }
 		  }
