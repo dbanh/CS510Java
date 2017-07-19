@@ -131,37 +131,172 @@ public class TextParser implements AirlineParser {
 		boolean success = false;
 		
 		if(key.equals("Flight number")) {
-			int number = Integer.valueOf(value);
-			flight.setNumber(number);
+			try {
+				int number = Integer.valueOf(value);
+				flight.setNumber(number);
+			} catch (NumberFormatException e) {
+				return false;
+			}
 			success = true;
 		}
 		
 		if(key.equals("Source")) {
-			flight.setSource(value);
-			success = true;
+			if(validateAirportCode(value)) {
+				flight.setSource(value);
+				success = true;
+			}
+			else {
+				return false;
+			}
 		}
 		
 		if(key.equals("Departure time")) {
 			String[] dateTime = value.split(" ");
-			flight.setDepartureDate(dateTime[0]);
-			flight.setDepartureTime(dateTime[1]);
-			success = true;
+			if(validateDate(dateTime[0]) && validateTime(dateTime[1])) {
+				flight.setDepartureDate(dateTime[0]);
+				flight.setDepartureTime(dateTime[1]);
+				success = true;
+			}
+			else {
+				return false;
+			}
 		}
 		
 		if(key.equals("Destination")) {
-			flight.setDestination(value);
-			success = true;
+			if (validateAirportCode(value)) {
+				flight.setDestination(value);
+				success = true;
+			}
+			else {
+				return false;
+			}
 		}
 		
 		if(key.equals("Arrival time")) {
 			String[] dateTime = value.split(" ");
-			flight.setArrivalDate(dateTime[0]);
-			flight.setArrivalTime(dateTime[1]);
-			success = true;
+			if(validateDate(dateTime[0]) && validateTime(dateTime[1])) {
+				System.out.println("VALID");
+				flight.setArrivalDate(dateTime[0]);
+				flight.setArrivalTime(dateTime[1]);
+				success = true;
+			}
+			else {
+				return false;
+			}
 		}
 		return success;
 	}
 
+	/**
+	 * This method checks to see if the airport code entered is a valid code. It is valid if it is exactly 3 characters long and only contains letters.
+	 * This method does not check that the airport code is a "real" airport code. 
+	 * @param airportCode
+	 * @return true if the airport code passed in is valid, false otherwise
+	 */
+	private static boolean validateAirportCode(String airportCode) {
+		if(airportCode.length() != 3) {
+			return false;
+		}
+		if(airportCode.matches(".*\\d+.*")) {
+			return false;
+		}
+		return true; 
+	}
+	
+	/**
+	 * This method validates the time string according to "HH:MM" format. The validation will accept single-digit hours but not single-digit minutes. For instance:
+	 * 1:11 is accepted
+	 * 12:12 is accepted
+	 * 2:2 is not accepted
+	 * 2 is not accepted
+	 * @param time string
+	 * @return true if time matches "HH:MM" format, false if it does not
+	 */
+	private static boolean validateTime(String time) {
+		String[] timeFields = time.split(":");
+		int hour;
+		int minutes;
+		
+		if(timeFields.length != 2)
+		{
+			return false;
+		}
+		
+		//validating the hours (HH)
+		try {
+    		hour = Integer.valueOf(timeFields[0]);
+    		if(hour > 24) {
+    			return false;
+    		}
+    	} catch (NumberFormatException e) {
+    		return false;
+    	}
+		
+		//validating the minutes (MM)
+		try {
+    		minutes = Integer.valueOf(timeFields[1]);
+    		if(minutes > 60) {
+    			return false;
+    		}
+    		
+    		if(minutes < 10) {
+    			//will not accept single-digit minutes. Must be two-digit, such as 02.
+    			if(timeFields[1].length() < 2) {
+    				return false; 
+    			}
+    		}
+    	} catch (NumberFormatException e) {
+    		return false;
+    	}
+			
+		return true;
+		
+	}
+
+	/**
+	 * This method validates the date string according to "MM/DD/YYYY" format. The validation will accept single-digit month and day values but not years less
+	 * than 4 digits. The method does not accept month values greater than 12 or day values greater than 31. For example: 
+	 * Accepted dates: 1/1/2001; 01/01/2001; 01/1/2001; 1/01/2001
+	 * Not accepted dates: 13/1/2001; 1/1/01; 1/32/2001
+	 * @param date string
+	 * @return true if date string matches MM/DD/YYYY format
+	 */
+	private static boolean validateDate(String date) {
+		
+		String[] dateFields = date.split("/");
+		int month;
+		int day;
+		
+		if(dateFields.length != 3) {
+			return false;
+		}
+		
+		try {
+    		month = Integer.valueOf(dateFields[0]);
+    	} catch (NumberFormatException e) {
+    		return false;
+    	}
+		
+		if(month > 12) {
+			return false;
+		}
+		
+		try {
+    		day = Integer.valueOf(dateFields[1]);
+    	} catch (NumberFormatException e) {
+    		return false;
+    	}
+		
+		if(day > 31) {
+			return false;
+		}
+		
+		if(dateFields[2].length() != 4) {
+			return false;
+		}
+		
+		return true;
+	}
 
 	
 }
