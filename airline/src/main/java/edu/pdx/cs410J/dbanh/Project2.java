@@ -54,24 +54,22 @@ public class Project2 {
 		    			}
 		    		}
 		    		
-		    		if (fileName.contains(".txt")) {
-						File file = null;
-						boolean fileExists = false;
-						file = new File(fileName);
-						fileExists = file.exists();
-						TextDumper textDumper = new TextDumper(fileName);
-						if (fileExists) {
-							parseFile(airline, flight, fileName, textDumper);
-						}
-
-						else {
-							try {
-								textDumper.dump(airline);
-							} catch (IOException e) {
-								System.err.println("ERROR: Problem saving flight to " + fileName);
-							}
-						} 
+					File file = null;
+					boolean fileExists = false;
+					file = new File(fileName);
+					fileExists = file.exists();
+					TextDumper textDumper = new TextDumper(fileName);
+					if (fileExists) {
+						parseFile(airline, flight, fileName, textDumper);
 					}
+
+					else {
+						try {
+							textDumper.dump(airline);
+						} catch (IOException e) {
+							System.err.println("ERROR: Problem saving flight to " + fileName);
+						}
+					} 
 
 		    	}
 		    	
@@ -216,15 +214,9 @@ public class Project2 {
 						 return false;
 					 }
 				 }
-				 else if(args[i].equals("-textFile")){
-					 ++optionsCount;
-			    	if (args[i+1].contains(".txt")) {
-						 ++i;
-			    	}
-			    	else {
-		    			System.err.println("ERROR: Valid filename not entered. Filename must come after -textFile option and must be in .txt format");
-			    	}
-
+				 else if(args[i].equals("-textFile")){ 
+					++optionsCount;
+			    	++i;
 					 
 					 //if options are not listed before airline/flight arguments, return failed validation
 					 //i would be equal to optionsCount if options are before arguments

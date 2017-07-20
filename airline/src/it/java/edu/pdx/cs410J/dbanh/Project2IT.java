@@ -95,18 +95,6 @@ public class Project2IT extends InvokeMainTestCase {
 	    assertThat(result.getTextWrittenToStandardError(), containsString("Airline entered does not match airline listed in"));
 	  }
 	  
-	  @Test
-	  public void testFileNameNotIncluded() throws FileNotFoundException {
-	    assertThat(airlineFile.exists(), equalTo(true));
-
-	    MainMethodResult result =
-	      invokeProject2("-textFile", "NotMyAirline",
-	        "234", "PDX", "7/17/2017", "15:00", "LAX", "7/17/2017", "18:00");
-	    assertThat(result.getExitCode(), equalTo(0));
-
-	    assertThat(result.getTextWrittenToStandardError(), containsString("Valid filename not entered."));
-	  }
-	  
 	  /**
 	   * Tests that invoking the main method with no arguments issues an error
 	   */
