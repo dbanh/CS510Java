@@ -5,6 +5,9 @@ import org.junit.Test;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Iterator;
 
 /**
@@ -15,9 +18,18 @@ public class FlightTest {
   @Test
   public void getArrivalStringNeedsToBeImplemented() {
     Flight flight = new Flight();
-    flight.setArrivalDate("1/1/2017");
-    flight.setArrivalTime("1:11");
-    assertThat(flight.getArrivalString(), is("1/1/2017 1:11"));
+    
+	String sb = new StringBuilder("1/1/2017").append(" ").append("1:11").toString();
+	SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy hh:mm");
+	Date date;
+	try {
+		date = formatter.parse(sb);
+		flight.setArrival(date);
+	} catch (ParseException e) {
+		
+	}
+
+    assertThat(flight.getArrivalString(), is("1/1/17 1:11 AM"));
   }
 
   @Test
@@ -44,26 +56,38 @@ public class FlightTest {
 	  String source = "PDX";
 	  flight.setSource(source);
 	  String departureDate = "1/1/2017";
-	  flight.setDepartureDate(departureDate);
 	  String departureTime = "1:11";
-	  flight.setDepartureTime(departureTime);
+
+	  String departure = new StringBuilder(departureDate).append(" ").append(departureTime).append("AM").toString();
+	  SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy hh:mm");
+	  Date departureDateTime;
+	  try {
+		  departureDateTime = formatter.parse(departure);
+		  flight.setDeparture(departureDateTime);
+	  } catch (ParseException e) {
+	  }
+
 	  String destination = "LAX";
 	  flight.setDestination(destination);
 	  String arrivalDate = "1/1/2017";
-	  flight.setArrivalDate(arrivalDate);
 	  String arrivalTime = "3:11";
-	  flight.setArrivalTime(arrivalTime);
+	  
+	  String arrival = new StringBuilder(arrivalDate).append(" ").append(arrivalTime).append("AM").toString();
+	  Date arrivalDateTime;
+	  try {
+		  arrivalDateTime = formatter.parse(arrival);
+		  flight.setArrival(arrivalDateTime);
+	  } catch (ParseException e) {
+	  }
 	  airline.addFlight(flight);
 	  
 	  assertThat(airline.getFlights(), is(notNullValue()));
 	  assertThat(airline.getName(), is(name));
 	  assertThat(flight.getNumber(), is(number));
 	  assertThat(flight.getSource(), is(source));
-	  String departure = new StringBuilder(departureDate).append(" ").append(departureTime).toString();
-	  assertThat(flight.getDepartureString(), is(departure));
+	  assertThat(flight.getDepartureString(), is("1/1/17 1:11 AM"));
 	  assertThat(flight.getDestination(), is(destination));
-	  String arrival = new StringBuilder(arrivalDate).append(" ").append(arrivalTime).toString();
-	  assertThat(flight.getArrivalString(), is(arrival));
+	  assertThat(flight.getArrivalString(), is("1/1/17 3:11 AM"));
   }
   
 }

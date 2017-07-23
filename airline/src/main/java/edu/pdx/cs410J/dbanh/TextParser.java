@@ -4,8 +4,11 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import edu.pdx.cs410J.AbstractAirline;
@@ -151,14 +154,23 @@ public class TextParser implements AirlineParser {
 		}
 		
 		if(key.equals("Departure time")) {
+			
 			String[] dateTime = value.split(" ");
-			if(validateDate(dateTime[0]) && validateTime(dateTime[1])) {
-				flight.setDepartureDate(dateTime[0]);
-				flight.setDepartureTime(dateTime[1]);
-				success = true;
-			}
-			else {
-				return false;
+			
+			boolean validDate = validateDate(dateTime[0]);
+			boolean validTime = validateTime(dateTime[1]);
+			
+			if(validDate && validTime) {
+				String sb = new StringBuilder(dateTime[0]).append(" ").append(dateTime[1]).toString();
+				SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy hh:mm");
+				Date date;
+				try {
+					date = formatter.parse(sb);
+					flight.setDeparture(date);
+					success = true;
+				} catch (ParseException e) {
+					return false;
+				}
 			}
 		}
 		
@@ -174,13 +186,20 @@ public class TextParser implements AirlineParser {
 		
 		if(key.equals("Arrival time")) {
 			String[] dateTime = value.split(" ");
-			if(validateDate(dateTime[0]) && validateTime(dateTime[1])) {
-				flight.setArrivalDate(dateTime[0]);
-				flight.setArrivalTime(dateTime[1]);
-				success = true;
-			}
-			else {
-				return false;
+			boolean validDate = validateDate(dateTime[0]);
+			boolean validTime = validateTime(dateTime[1]);
+			
+			if(validDate && validTime) {
+				String sb = new StringBuilder(dateTime[0]).append(" ").append(dateTime[1]).toString();
+				SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy hh:mm");
+				Date date;
+				try {
+					date = formatter.parse(sb);
+					flight.setArrival(date);
+					success = true;
+				} catch (ParseException e) {
+					return false;
+				}
 			}
 		}
 		return success;
@@ -224,7 +243,7 @@ public class TextParser implements AirlineParser {
 		//validating the hours (HH)
 		try {
     		hour = Integer.valueOf(timeFields[0]);
-    		if(hour > 24) {
+    		if(hour > 12) {
     			return false;
     		}
     	} catch (NumberFormatException e) {
@@ -289,8 +308,9 @@ public class TextParser implements AirlineParser {
 		if(day > 31) {
 			return false;
 		}
+
 		
-		if(dateFields[2].length() != 4) {
+		if(dateFields[2].length() != 2 && dateFields[2].length() == 4) {
 			return false;
 		}
 		

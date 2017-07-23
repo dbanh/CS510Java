@@ -16,10 +16,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 /**
- * An integration test for the {@link Project2} main class.
+ * An integration test for the {@link Project3} main class.
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class Project2IT extends InvokeMainTestCase {
+public class Project3IT extends InvokeMainTestCase {
 	private static File airlineFile;
 
 	  @BeforeClass
@@ -36,8 +36,8 @@ public class Project2IT extends InvokeMainTestCase {
 	  }
 	  
 
-	  private MainMethodResult invokeProject2(String... args) {
-	    return invokeMain(Project2.class, args);
+	  private MainMethodResult invokeProject3(String... args) {
+	    return invokeMain(Project3.class, args);
 	  }
 
 	  private String readFile(File file) throws FileNotFoundException {
@@ -61,8 +61,8 @@ public class Project2IT extends InvokeMainTestCase {
 	    assertThat(airlineFile.exists(), equalTo(false));
 
 	    MainMethodResult result =
-	      invokeProject2("-textFile", airlineFile.getAbsolutePath(), "MyAirline",
-	        "123", "PDX", "7/16/2017", "15:00", "LAX", "7/16/2017", "18:00");
+	      invokeProject3("-textFile", airlineFile.getAbsolutePath(), "MyAirline",
+	        "123", "PDX", "7/16/2017", "3:00", "PM", "LAX", "7/16/2017", "6:00", "PM");
 	    assertThat(result.getExitCode(), equalTo(0));
 
 	    String fileContents = readFile(airlineFile);
@@ -74,8 +74,8 @@ public class Project2IT extends InvokeMainTestCase {
 	    assertThat(airlineFile.exists(), equalTo(true));
 
 	    MainMethodResult result =
-	      invokeProject2("-textFile", airlineFile.getAbsolutePath(), "MyAirline",
-	        "234", "PDX", "7/17/2017", "15:00", "LAX", "7/17/2017", "18:00");
+	      invokeProject3("-textFile", airlineFile.getAbsolutePath(), "MyAirline",
+	        "234", "PDX", "7/17/2017", "3:00", "PM", "LAX", "7/17/2017", "6:00", "PM");
 	    assertThat(result.getExitCode(), equalTo(0));
 
 	    String fileContents = readFile(airlineFile);
@@ -88,8 +88,8 @@ public class Project2IT extends InvokeMainTestCase {
 	    assertThat(airlineFile.exists(), equalTo(true));
 
 	    MainMethodResult result =
-	      invokeProject2("-textFile", airlineFile.getAbsolutePath(), "NotMyAirline",
-	        "234", "PDX", "7/17/2017", "15:00", "LAX", "7/17/2017", "18:00");
+	      invokeProject3("-textFile", airlineFile.getAbsolutePath(), "NotMyAirline",
+	        "234", "PDX", "7/17/2017", "3:00", "PM", "LAX", "7/17/2017", "6:00", "PM");
 	    assertThat(result.getExitCode(), equalTo(0));
 
 	    assertThat(result.getTextWrittenToStandardError(), containsString("Airline entered does not match airline listed in"));
@@ -100,7 +100,7 @@ public class Project2IT extends InvokeMainTestCase {
 	   */
 	  @Test
 	  public void testNoCommandLineArguments() {
-	    MainMethodResult result = invokeProject2();
+	    MainMethodResult result = invokeProject3();
 	    assertThat(result.getExitCode(), equalTo(0));
 	    assertThat(result.getTextWrittenToStandardError(), containsString("Missing command line arguments"));
 	  }
@@ -110,7 +110,7 @@ public class Project2IT extends InvokeMainTestCase {
 	   */
 	  @Test
 	  public void testNotEnoughArguments() {
-	    MainMethodResult result = invokeProject2("United", "42", "ABC");
+	    MainMethodResult result = invokeProject3("United", "42", "ABC");
 	    assertThat(result.getExitCode(), equalTo(0));
 	    assertThat(result.getTextWrittenToStandardError(), containsString("Command line arguments not valid"));
 	  }
@@ -120,7 +120,7 @@ public class Project2IT extends InvokeMainTestCase {
 	   */
 	  @Test
 	  public void testTooManyArguments() {
-	    MainMethodResult result = invokeProject2("United", "42", "ABC", "01/01/2001", "1:11", "PDX", "03/03/2003", "3:33", "ABCD");
+	    MainMethodResult result = invokeProject3("United", "42", "ABC", "01/01/2001", "1:11", "AM", "PDX", "03/03/2003", "3:33", "PM", "ABCD");
 	    assertThat(result.getExitCode(), equalTo(0));
 	    assertThat(result.getTextWrittenToStandardError(), containsString("Command line arguments not valid."));
 	  }
@@ -130,11 +130,11 @@ public class Project2IT extends InvokeMainTestCase {
 	   */
 	  @Test
 	  public void testReadme() {
-	    MainMethodResult result = invokeProject2("-README", "United", "42", "ABC", "01/01/2001", "1:11", "PDX", "03/03/2003", "3:33");
+	    MainMethodResult result = invokeProject3("-README", "United", "42", "ABC", "01/01/2001", "1:11", "AM", "PDX", "03/03/2003", "3:33", "PM");
 	    assertThat(result.getExitCode(), equalTo(0));
 	    assertThat(result.getTextWrittenToStandardOut(), containsString("README"));
 	    
-	    MainMethodResult result2 = invokeProject2("-print", "-README", "-textFile", "test.txt", "United", "42", "ABC", "01/01/2001", "1:11", "PDX", "03/03/2003", "3:33");
+	    MainMethodResult result2 = invokeProject3("-print", "-README", "-textFile", "test.txt", "United", "42", "ABC", "01/01/2001", "1:11", "AM", "PDX", "03/03/2003", "3:33", "AM");
 	    assertThat(result2.getExitCode(), equalTo(0));
 	    assertThat(result2.getTextWrittenToStandardOut(), containsString("README"));
 	  }
@@ -144,11 +144,11 @@ public class Project2IT extends InvokeMainTestCase {
 	   */
 	  @Test
 	  public void testPrint() {
-	    MainMethodResult result = invokeProject2("-print", "United", "42", "ABC", "01/01/2001", "1:11", "PDX", "03/03/2003", "3:33");
+	    MainMethodResult result = invokeProject3("-print", "United", "42", "ABC", "01/01/2001", "1:11", "AM", "PDX", "03/03/2003", "3:33", "AM");
 	    assertThat(result.getExitCode(), equalTo(0));
 	    assertThat(result.getTextWrittenToStandardOut(), containsString("Flight 42 departs ABC"));
 	    
-	    MainMethodResult result2 = invokeProject2("-textFile", "text.txt", "-print", "United", "42", "ABC", "01/01/2001", "1:11", "PDX", "03/03/2003", "3:33");
+	    MainMethodResult result2 = invokeProject3("-textFile", "text.txt", "-print", "United", "42", "ABC", "01/01/2001", "1:11", "AM", "PDX", "03/03/2003", "3:33", "AM");
 	    assertThat(result2.getExitCode(), equalTo(0));
 	    assertThat(result2.getTextWrittenToStandardOut(), containsString("Flight 42 departs ABC"));
 	  }
@@ -158,11 +158,11 @@ public class Project2IT extends InvokeMainTestCase {
 	   */
 	  @Test
 	  public void testAirportCodeNotValid() {
-		  MainMethodResult result = invokeProject2("-print", "United", "42", "AB1", "01/01/2001", "1:11", "PDX", "03/03/2003", "3:33");
+		  MainMethodResult result = invokeProject3("-print", "United", "42", "AB1", "01/01/2001", "1:11", "AM", "PDX", "03/03/2003", "3:33", "AM");
 		    assertThat(result.getExitCode(), equalTo(0));
 		    assertThat(result.getTextWrittenToStandardError(), containsString("airport code is not valid."));
 		    
-		  MainMethodResult result2 = invokeProject2("-print", "United", "42", "ABC", "01/01/2001", "1:11", "PDXW", "03/03/2003", "3:33");
+		  MainMethodResult result2 = invokeProject3("-print", "United", "42", "ABC", "01/01/2001", "1:11", "AM", "PDXW", "03/03/2003", "3:33", "AM");
 		    assertThat(result2.getExitCode(), equalTo(0));
 		    assertThat(result2.getTextWrittenToStandardError(), containsString("airport code is not valid."));
   }

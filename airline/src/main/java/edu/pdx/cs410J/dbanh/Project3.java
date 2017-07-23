@@ -2,7 +2,10 @@ package edu.pdx.cs410J.dbanh;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -24,7 +27,7 @@ import edu.pdx.cs410J.ParserException;
  * 
  * Options (-README, -textFile, and -print) MUST come before airline/flight arguments. And the filename MUST come directly after -textFile.
  */
-public class Project2 {
+public class Project3 {
 
 	  public static void main(String[] args) {
 	    Class c = AbstractAirline.class;  // Refer to one of Dave's classes so that we can be sure it is on the classpath
@@ -232,7 +235,7 @@ public class Project2 {
 			 }
 		 }
 		 
-		 if(argsCount == 8) {
+		 if(argsCount == 10) {
 			 return true;
 		 }
 		 else {
@@ -263,7 +266,7 @@ public class Project2 {
 	
 		List<String> errorList = new ArrayList<String>();
 		
-		int startingPosition = args.length - 8; //accounts for any options included in the argument list
+		int startingPosition = args.length - 10; //accounts for any options included in the argument list
 		
 		for (int i = startingPosition; i < args.length; ++i) {
 			
@@ -287,24 +290,31 @@ public class Project2 {
 				}
 			}
 			else if(i == startingPosition+3) {
-				boolean valid = validateDate(args[i]);
-				if(valid == false) {
-					errorList.add("ERROR: Destination date is not in the correct format. (Correct format: MM/DD/YYYY)");
+				boolean validDate = validateDate(args[i]);
+				boolean validTime = validateTime(args[i+1]);
+				boolean validAmPm = validateAmPm(args[i+2]);
+				
+				if(validDate == false) {
+					errorList.add("ERROR: Departure date is not in the correct format. (Correct format: MM/DD/YYYY)");
 				}
+				if(validTime == false || validAmPm == false) {
+					errorList.add("ERROR: Departure time is not in the correct format. (Correct format: HH:MM AM/PM)");
+				}
+				
 				else {
-					flight.setDepartureDate(args[i]);
+					String sb = new StringBuilder(args[i]).append(" ").append(args[i+1]).append(" ").append(args[i+2]).toString();
+					SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
+					Date date;
+					try {
+						date = formatter.parse(sb);
+						flight.setDeparture(date);
+					} catch (ParseException e) {
+						errorList.add("ERROR: Depature date/time is not in the correct format. (Correct format: MM/DD/YYYY HH:MM AM/PM)");
+					}
+					i+=2;
 				}
 			}
-			else if(i == startingPosition+4) {
-				boolean valid = validateTime(args[i]);
-				if(valid == false) {
-					errorList.add("ERROR: Destination time is not in the correct format. (Correct format: HH:MM)");
-				}
-				else {
-					flight.setDepartureTime(args[i]);
-				}
-			}
-			else if(i == startingPosition+5) {
+			else if(i == startingPosition+6) {
 				if(validateAirportCode(args[i])) {
 					flight.setDestination(args[i]);
 				}
@@ -312,22 +322,29 @@ public class Project2 {
 					errorList.add("ERROR: Destination airport code is not valid. Valid codes are 3 characters long and only contains letters.");
 				}
 			}
-			else if(i == startingPosition+6) {
-				boolean valid = validateDate(args[i]);
-				if(valid == false) {
+			else if(i == startingPosition+7) {
+				boolean validDate = validateDate(args[i]);
+				boolean validTime = validateTime(args[i+1]);
+				boolean validAmPm = validateAmPm(args[i+2]);
+				
+				if(validDate == false) {
 					errorList.add("ERROR: Arrival date is not in the correct format. (Correct format: MM/DD/YYYY)");
 				}
-				else {
-					flight.setArrivalDate(args[i]);
+				if(validTime == false || validAmPm == false) {
+					errorList.add("ERROR: Arrival time is not in the correct format. (Correct format: HH:MM AM/PM - not 24-hour format)");
 				}
-			}
-			else if(i == startingPosition+7) {
-				boolean valid = validateTime(args[i]);
-				if(valid == false) {
-					errorList.add("ERROR: Arrival time is not in the correct format. (Correct format: HH:MM)");
-				}
+				
 				else {
-					flight.setArrivalTime(args[i]);
+					String sb = new StringBuilder(args[i]).append(" ").append(args[i+1]).append(" ").append(args[i+2]).toString();
+					SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
+					Date date;
+					try {
+						date = formatter.parse(sb);
+						flight.setArrival(date);
+					} catch (ParseException e) {
+						errorList.add("ERROR: Arrival date/time is not in the correct format. (Correct format: MM/DD/YYYY HH:MM AM/PM - not 24-hour format)");
+					}
+					i+=2;
 				}
 			}
 		} 
@@ -336,6 +353,19 @@ public class Project2 {
 		return errorList;
 	}
 	
+	/**
+	 * This methods checks to see is the argument following time is correctly "am" or "pm"
+	 * @param amPm
+	 * @return true if "am" or "pm", false otherwise
+	 */
+	private static boolean validateAmPm(String amPm) {
+		if(amPm.toLowerCase().equals("am") || amPm.toLowerCase().equals("pm")) {
+			return true;
+		}
+		return false;
+	}
+
+
 	/**
 	 * This method checks to see if the airport code entered is a valid code. It is valid if it is exactly 3 characters long and only contains letters.
 	 * This method does not check that the airport code is a "real" airport code. 
@@ -374,7 +404,7 @@ public class Project2 {
 		//validating the hours (HH)
 		try {
     		hour = Integer.valueOf(timeFields[0]);
-    		if(hour > 24) {
+    		if(hour > 12) {
     			return false;
     		}
     	} catch (NumberFormatException e) {

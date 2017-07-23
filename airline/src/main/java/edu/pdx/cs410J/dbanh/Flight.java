@@ -1,15 +1,17 @@
 package edu.pdx.cs410J.dbanh;
 
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 import edu.pdx.cs410J.AbstractFlight;
 
 public class Flight extends AbstractFlight {
 	
 	private String source;
 	private String destination;
-	private String departureDate;
-	private String departureTime;
-	private String arrivalDate;
-	private String arrivalTime;
+	private Date departure;
+	private Date arrival;
 	private int number;
 	
   @Override
@@ -32,11 +34,9 @@ public class Flight extends AbstractFlight {
 
   @Override
   public String getDepartureString() {
-	  return new StringBuilder(departureDate).append(" ").append(departureTime).toString();
-  }
-  
-  public void setDepartureTime(String departureTime) {
-	  this.departureTime = departureTime;
+	  Locale currentLocale = new Locale("en_US");
+	  DateFormat formatter = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, currentLocale);
+	  return formatter.format(departure);
   }
 
   @Override
@@ -50,27 +50,26 @@ public class Flight extends AbstractFlight {
 
   @Override
   public String getArrivalString() {
-	  return new StringBuilder(arrivalDate).append(" ").append(arrivalTime).toString();
+	  Locale currentLocale = new Locale("en_US");
+	  DateFormat formatter = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, currentLocale);
+	  return formatter.format(arrival);
 
   }
   
-  public void setArrivalTime(String arrivalTime) {
-	  this.arrivalTime = arrivalTime;
+  public Date getDeparture() {
+	return departure;
+  }
+	
+  public void setDeparture(Date departure) {
+	this.departure = departure;
+  }
+	
+  public Date getArriva() {
+	return arrival;
+  }
+  
+  public void setArrival(Date arrival) {
+	  this.arrival = arrival;
   }
 
-public String getDepartureDate() {
-	return departureDate;
-}
-
-public void setDepartureDate(String departureDate) {
-	this.departureDate = departureDate;
-}
-
-public String getArrivalDate() {
-	return arrivalDate;
-}
-
-public void setArrivalDate(String arrivalDate) {
-	this.arrivalDate = arrivalDate;
-}
 }
