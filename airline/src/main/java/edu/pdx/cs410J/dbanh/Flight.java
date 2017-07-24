@@ -1,12 +1,13 @@
 package edu.pdx.cs410J.dbanh;
 
 import java.text.DateFormat;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Locale;
 
 import edu.pdx.cs410J.AbstractFlight;
 
-public class Flight extends AbstractFlight {
+public class Flight extends AbstractFlight implements Comparable<Flight> {
 	
 	private String source;
 	private String destination;
@@ -70,6 +71,32 @@ public class Flight extends AbstractFlight {
   
   public void setArrival(Date arrival) {
 	  this.arrival = arrival;
+  }
+
+  @Override
+  public int compareTo(Flight flight) {
+	  int result = this.getSource().compareTo(flight.getSource());
+	  if(result != 0) {
+		  return result;
+	  }
+	  System.out.println("time compare: "+ this.getDeparture().compareTo(flight.getDeparture()));
+	  
+	  return this.getDeparture().compareTo(flight.getDeparture());
+//	  if(this.getDeparture().compareTo(flight.getDeparture()) == 1) {
+//		  System.out.println("this: " + this.getDepartureString());
+//		  System.out.println("flight: " + flight.getDepartureString());
+//		  System.out.println("After");
+//		  return 1;
+//	  }
+//	  else if (this.getDeparture().compareTo(flight.getDeparture()) == -1) {
+//		  System.out.println("this: " + this.getDepartureString());
+//		  System.out.println("flight: " + flight.getDepartureString());
+//		  System.out.println("Before");
+//		  return -1;
+//	  }
+//	  else {
+//		  return 0;
+//	  }
   }
 
 }
