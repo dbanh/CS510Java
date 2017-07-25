@@ -176,8 +176,6 @@ public class TextParser implements AirlineParser {
 				Date date;
 				try {
 					date = formatter.parse(sb);
-					System.out.println("string builder: " + sb);
-					System.out.println("saving departure: " + date);
 					flight.setDeparture(date);
 					success = true;
 				} catch (ParseException e) {

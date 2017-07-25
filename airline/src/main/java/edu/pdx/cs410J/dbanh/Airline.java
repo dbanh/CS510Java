@@ -42,13 +42,8 @@ public void setName(String name) {
 }
 
 public void setFlights(List<Flight> flights) {
-	System.out.println("SETTING FLIGHTS");
 	List<AbstractFlight> abstractFlights = new ArrayList<AbstractFlight>(flights);
 	this.flights = abstractFlights;
-	for(AbstractFlight abflight: this.flights) {
-		System.out.println(abflight.getSource());
-	}
-	
 }
 
 }

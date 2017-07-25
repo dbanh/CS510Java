@@ -67,7 +67,6 @@ public class Project3 {
 					fileExists = file.exists();
 					TextDumper textDumper = new TextDumper(fileName);
 					if (fileExists) {
-						System.out.println("File exists");
 						parseFile(airline, flight, fileName, textDumper);
 					}
 
@@ -136,19 +135,8 @@ public class Project3 {
 	    			listFlightsForAirline.add((Flight) airlineFlight);
 	    			
 	    		}	
-	    		
-	    		for(Flight airlineFlight : listFlightsForAirline) {
-	    			System.out.println(airlineFlight.toString());
-	    		}
 				
 				Collections.sort(listFlightsForAirline);
-				
-				System.out.println("Post sort");
-				
-				
-	    		for(Flight airlineFlight2 : listFlightsForAirline) {
-	    			System.out.println(airlineFlight2.toString());
-	    		}
 
 				((Airline) airlineFromFile).setFlights(listFlightsForAirline);
 				
@@ -159,44 +147,10 @@ public class Project3 {
 			}
 		} catch (ParserException e) {
 			System.err.println("ERROR: Problem reading from " + fileName + ". Please check file.");
-			System.out.println(e);
 		} catch (IOException e) {
 			System.err.println("ERROR: Problem adding flight to " + fileName);
-			System.out.println(e);
 		}
 	}
-	
-	static final Comparator<Flight> FLIGHT_ORDER = new Comparator<Flight>() {
-
-			@Override
-			public int compare(Flight o1, Flight o2) {
-				  int result = o1.getSource().compareTo(o2.getSource());
-				  if(result != 0) {
-					  return result;
-				  }
-				  System.out.println("time compare: "+ o1.getDeparture().compareTo(o2.getDeparture()));
-				  
-				  return o1.getDeparture().compareTo(o2.getDeparture());
-			}
-//				System.out.println("COMPARING!!");
-//			  if(o1.getSource().equals(o2.getSource())) {
-//				  System.out.println("Flight sources are equal");
-//				  if(o1.getDeparture().before(o2.getDeparture())) {
-//					  System.out.println("BEFORE");
-//					  return -1;
-//				  }
-//				  if(o1.getDeparture().after(o2.getDeparture())) {
-//					  System.out.println("AFTER");
-//					  return 1;
-//				  }
-//				  else {
-//					  System.out.println("SAME");
-//						  return 0;
-//					 }
-//			  }
-//			  return 0;
-//			}
-	};
 
 	  
 	  /**

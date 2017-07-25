@@ -92,27 +92,8 @@ public class Flight extends AbstractFlight implements Comparable<Flight> {
 	  } catch (ParseException e) {
 		return 0;
 	  }
-
-	  System.out.println("this.departure: " + this.getSource() + "   " + this.getDeparture());
-	  System.out.println("flight departure: " + flight.getDeparture());
-	  System.out.println("time compare: "+ this.getDeparture().compareTo(flight.getDeparture()));
 	  
 	  return this.getDeparture().compareTo(date);
-//	  if(this.getDeparture().compareTo(flight.getDeparture()) == 1) {
-//		  System.out.println("this: " + this.getDepartureString());
-//		  System.out.println("flight: " + flight.getDepartureString());
-//		  System.out.println("After");
-//		  return 1;
-//	  }
-//	  else if (this.getDeparture().compareTo(flight.getDeparture()) == -1) {
-//		  System.out.println("this: " + this.getDepartureString());
-//		  System.out.println("flight: " + flight.getDepartureString());
-//		  System.out.println("Before");
-//		  return -1;
-//	  }
-//	  else {
-//		  return 0;
-//	  }
   }
 
 }
