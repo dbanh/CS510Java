@@ -1,6 +1,8 @@
 package edu.pdx.cs410J.dbanh;
 
 import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Locale;
@@ -30,14 +32,14 @@ public class Flight extends AbstractFlight implements Comparable<Flight> {
   }
   
   public void setSource(String source) {
-	  this.source = source;
+	  this.source = source.toUpperCase();
   }
 
   @Override
   public String getDepartureString() {
 	  Locale currentLocale = new Locale("en_US");
 	  DateFormat formatter = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, currentLocale);
-	  return formatter.format(departure);
+	  return formatter.format(this.departure);
   }
 
   @Override
@@ -46,14 +48,14 @@ public class Flight extends AbstractFlight implements Comparable<Flight> {
   }
   
   public void setDestination(String destination) {
-	  this.destination = destination;
+	  this.destination = destination.toUpperCase();
   }
 
   @Override
   public String getArrivalString() {
 	  Locale currentLocale = new Locale("en_US");
 	  DateFormat formatter = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, currentLocale);
-	  return formatter.format(arrival);
+	  return formatter.format(this.arrival);
 
   }
   
@@ -65,7 +67,7 @@ public class Flight extends AbstractFlight implements Comparable<Flight> {
 	this.departure = departure;
   }
 	
-  public Date getArriva() {
+  public Date getArrival() {
 	return arrival;
   }
   
@@ -79,9 +81,23 @@ public class Flight extends AbstractFlight implements Comparable<Flight> {
 	  if(result != 0) {
 		  return result;
 	  }
+	  Locale currentLocale = new Locale("en_US");
+	  DateFormat formatter = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, currentLocale);
+	  String formattedDeparture = formatter.format(flight.departure);
+	  SimpleDateFormat simpleFormatter = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
+	  Date date;
+
+	  try {
+		date = formatter.parse(formattedDeparture);
+	  } catch (ParseException e) {
+		return 0;
+	  }
+
+	  System.out.println("this.departure: " + this.getSource() + "   " + this.getDeparture());
+	  System.out.println("flight departure: " + flight.getDeparture());
 	  System.out.println("time compare: "+ this.getDeparture().compareTo(flight.getDeparture()));
 	  
-	  return this.getDeparture().compareTo(flight.getDeparture());
+	  return this.getDeparture().compareTo(date);
 //	  if(this.getDeparture().compareTo(flight.getDeparture()) == 1) {
 //		  System.out.println("this: " + this.getDepartureString());
 //		  System.out.println("flight: " + flight.getDepartureString());

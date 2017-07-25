@@ -62,6 +62,7 @@ public class TextDumper implements AirlineDumper {
 			
 			List<AbstractFlight> flights = new ArrayList<AbstractFlight>(arg0.getFlights());
 			for(AbstractFlight flight: flights) {
+				
 				bufferedWriter.write("Flight number - ");
 				bufferedWriter.write(Integer.toString(flight.getNumber()));
 				bufferedWriter.newLine();

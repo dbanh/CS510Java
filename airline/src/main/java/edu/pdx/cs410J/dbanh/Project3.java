@@ -14,6 +14,7 @@ import java.util.List;
 
 import edu.pdx.cs410J.AbstractAirline;
 import edu.pdx.cs410J.AbstractFlight;
+import edu.pdx.cs410J.AirportNames;
 import edu.pdx.cs410J.ParserException;
 
 /**
@@ -169,24 +170,32 @@ public class Project3 {
 
 			@Override
 			public int compare(Flight o1, Flight o2) {
-				System.out.println("COMPARING!!");
-			  if(o1.getSource().equals(o2.getSource())) {
-				  System.out.println("Flight sources are equal");
-				  if(o1.getDeparture().before(o2.getDeparture())) {
-					  System.out.println("BEFORE");
-					  return -1;
+				  int result = o1.getSource().compareTo(o2.getSource());
+				  if(result != 0) {
+					  return result;
 				  }
-				  if(o1.getDeparture().after(o2.getDeparture())) {
-					  System.out.println("AFTER");
-					  return 1;
-				  }
-				  else {
-					  System.out.println("SAME");
-						  return 0;
-					 }
-			  }
-			  return 0;
+				  System.out.println("time compare: "+ o1.getDeparture().compareTo(o2.getDeparture()));
+				  
+				  return o1.getDeparture().compareTo(o2.getDeparture());
 			}
+//				System.out.println("COMPARING!!");
+//			  if(o1.getSource().equals(o2.getSource())) {
+//				  System.out.println("Flight sources are equal");
+//				  if(o1.getDeparture().before(o2.getDeparture())) {
+//					  System.out.println("BEFORE");
+//					  return -1;
+//				  }
+//				  if(o1.getDeparture().after(o2.getDeparture())) {
+//					  System.out.println("AFTER");
+//					  return 1;
+//				  }
+//				  else {
+//					  System.out.println("SAME");
+//						  return 0;
+//					 }
+//			  }
+//			  return 0;
+//			}
 	};
 
 	  
@@ -346,7 +355,7 @@ public class Project3 {
 					flight.setSource(args[i]);
 				}
 				else {
-					errorList.add("ERROR: Source airport code is not valid. Valid codes are 3 characters long and only contains letters.");
+					errorList.add("ERROR: Source airport code is not valid. Valid codes are 3 characters long, may only contains letters, and must be a real code.");
 				}
 			}
 			else if(i == startingPosition+3) {
@@ -379,7 +388,7 @@ public class Project3 {
 					flight.setDestination(args[i]);
 				}
 				else {
-					errorList.add("ERROR: Destination airport code is not valid. Valid codes are 3 characters long and only contains letters.");
+					errorList.add("ERROR: Destination airport code is not valid. Valid codes are 3 characters long, may only contains letters, and must be a real code.");
 				}
 			}
 			else if(i == startingPosition+7) {
@@ -439,7 +448,10 @@ public class Project3 {
 		if(airportCode.matches(".*\\d+.*")) {
 			return false;
 		}
-		return true; 
+		if(AirportNames.getName(airportCode.toUpperCase()) != null) {
+			return true;
+		}
+		return false; 
 	}
 
 	/**

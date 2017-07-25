@@ -15,6 +15,7 @@ import edu.pdx.cs410J.AbstractAirline;
 import edu.pdx.cs410J.AbstractFlight;
 import edu.pdx.cs410J.AirlineDumper;
 import edu.pdx.cs410J.AirlineParser;
+import edu.pdx.cs410J.AirportNames;
 import edu.pdx.cs410J.ParserException;
 
 /**
@@ -155,17 +156,28 @@ public class TextParser implements AirlineParser {
 		
 		if(key.equals("Departure time")) {
 			
-			String[] dateTime = value.split(" ");
+			String[] dateTime;
+			boolean validDate;
+			boolean validTime;
+			boolean validAmPm;
 			
-			boolean validDate = validateDate(dateTime[0]);
-			boolean validTime = validateTime(dateTime[1]);
+			try {
+				dateTime = value.split(" ");
+				validDate = validateDate(dateTime[0]);
+				validTime = validateTime(dateTime[1]);
+				validAmPm = validateAmPm(dateTime[2]);
+			} catch (Exception e1) {
+				return false;
+			}
 			
-			if(validDate && validTime) {
-				String sb = new StringBuilder(dateTime[0]).append(" ").append(dateTime[1]).toString();
-				SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy hh:mm");
+			if(validDate && validTime && validAmPm) {
+				String sb = new StringBuilder(dateTime[0]).append(" ").append(dateTime[1]).append(" ").append(dateTime[2]).toString();
+				SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yy hh:mm a");
 				Date date;
 				try {
 					date = formatter.parse(sb);
+					System.out.println("string builder: " + sb);
+					System.out.println("saving departure: " + date);
 					flight.setDeparture(date);
 					success = true;
 				} catch (ParseException e) {
@@ -185,13 +197,22 @@ public class TextParser implements AirlineParser {
 		}
 		
 		if(key.equals("Arrival time")) {
-			String[] dateTime = value.split(" ");
-			boolean validDate = validateDate(dateTime[0]);
-			boolean validTime = validateTime(dateTime[1]);
+			String[] dateTime;
+			boolean validDate;
+			boolean validTime;
+			boolean validAmPm;
+			try {
+				dateTime = value.split(" ");
+				validDate = validateDate(dateTime[0]);
+				validTime = validateTime(dateTime[1]);
+				validAmPm = validateAmPm(dateTime[2]);
+			} catch (Exception e1) {
+				return false;
+			}
 			
-			if(validDate && validTime) {
-				String sb = new StringBuilder(dateTime[0]).append(" ").append(dateTime[1]).toString();
-				SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy hh:mm");
+			if(validDate && validTime && validAmPm) {
+				String sb = new StringBuilder(dateTime[0]).append(" ").append(dateTime[1]).append(" ").append(dateTime[2]).toString();
+				SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yy hh:mm a");
 				Date date;
 				try {
 					date = formatter.parse(sb);
@@ -203,6 +224,18 @@ public class TextParser implements AirlineParser {
 			}
 		}
 		return success;
+	}
+	
+	/**
+	 * This methods checks to see is the argument following time is correctly "am" or "pm"
+	 * @param amPm
+	 * @return true if "am" or "pm", false otherwise
+	 */
+	private static boolean validateAmPm(String amPm) {
+		if(amPm.toLowerCase().equals("am") || amPm.toLowerCase().equals("pm")) {
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -218,7 +251,10 @@ public class TextParser implements AirlineParser {
 		if(airportCode.matches(".*\\d+.*")) {
 			return false;
 		}
-		return true; 
+		if(AirportNames.getName(airportCode.toUpperCase()) != null) {
+			return true;
+		}
+		return false; 
 	}
 	
 	/**
@@ -284,6 +320,7 @@ public class TextParser implements AirlineParser {
 		String[] dateFields = date.split("/");
 		int month;
 		int day;
+		int year;
 		
 		if(dateFields.length != 3) {
 			return false;
@@ -308,12 +345,16 @@ public class TextParser implements AirlineParser {
 		if(day > 31) {
 			return false;
 		}
+		
+		try {
+			if(dateFields[2].length() != 2 && dateFields[2].length() == 4) {
+				return false;
+			}
+    		year = Integer.valueOf(dateFields[2]);
+    	} catch (NumberFormatException e) {
+    		return false;
+    	}
 
-		
-		if(dateFields[2].length() != 2 && dateFields[2].length() == 4) {
-			return false;
-		}
-		
 		return true;
 	}
 
