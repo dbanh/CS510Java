@@ -21,11 +21,13 @@ import static org.junit.Assert.assertTrue;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class Project3IT extends InvokeMainTestCase {
 	private static File airlineFile;
+	private static File prettyFile;
 
 	  @BeforeClass
 	  public static void createTempDirectoryForAirlineFile() throws IOException {
 	    File tmpDirectory = new File(System.getProperty("java.io.tmpdir"));
 	    airlineFile = new File(tmpDirectory, "airline.txt");
+	    prettyFile = new File(tmpDirectory, "prettyAirline.txt");
 	  }
 
 	  @AfterClass
@@ -33,6 +35,9 @@ public class Project3IT extends InvokeMainTestCase {
 	    if (airlineFile.exists()) {
 	      assertTrue(airlineFile.delete());
 	    }
+	    if (prettyFile.exists()) {
+		      assertTrue(prettyFile.delete());
+		    }
 	  }
 	  
 
@@ -87,9 +92,31 @@ public class Project3IT extends InvokeMainTestCase {
 	    assertThat(fileContents, containsString("123"));
 	    assertThat(fileContents, containsString("234"));
 	    assertThat(fileContents, containsString("567"));
-	    
-	    
-	    
+	  }
+	  
+	  @Test
+	  public void testPrettyFileCreated() throws FileNotFoundException {
+	    assertThat(prettyFile.exists(), equalTo(false));
+
+	    MainMethodResult result =
+	      invokeProject3("-pretty", prettyFile.getAbsolutePath(), "MyAirline",
+	        "123", "PDX", "7/16/2017", "3:00", "PM", "LAX", "7/16/2017", "6:00", "PM");
+	    assertThat(result.getExitCode(), equalTo(0));
+
+	    String fileContents = readFile(prettyFile);
+	    assertThat(fileContents, containsString("123"));
+	    assertThat(fileContents, containsString("flight"));
+	  }
+	  
+	  @Test
+	  public void testPrettyStandardOut() throws FileNotFoundException {
+
+	    MainMethodResult result =
+	      invokeProject3("-pretty", "-", "MyAirline",
+	        "123", "PDX", "7/16/2017", "3:00", "PM", "LAX", "7/16/2017", "6:00", "PM");
+	    assertThat(result.getExitCode(), equalTo(0));
+
+	    assertThat(result.getTextWrittenToStandardOut(), containsString("Source: PDX"));
 	  }
 	  
 	  @Test

@@ -21,10 +21,6 @@ public void addFlight(AbstractFlight arg0) {
 	this.flights.add(arg0);
 }
 
-//public void addFlight(Flight arg0) {
-//	this.flights.add(arg0);
-//}
-
 @Override
 public Collection<AbstractFlight> getFlights() {
 	// TODO Auto-generated method stub

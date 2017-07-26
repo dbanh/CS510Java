@@ -345,7 +345,7 @@ public class TextParser implements AirlineParser {
 		}
 		
 		try {
-			if(dateFields[2].length() != 2 && dateFields[2].length() == 4) {
+			if(dateFields[2].length() != 2 && dateFields[2].length() != 4) {
 				return false;
 			}
     		year = Integer.valueOf(dateFields[2]);

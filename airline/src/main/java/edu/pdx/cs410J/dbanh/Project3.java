@@ -24,12 +24,12 @@ import edu.pdx.cs410J.ParserException;
  * If the -README option is invoked, the program will print out the README but will not run the rest of the program.
  * The program will validate command line arguments according to the criteria specified and will display a list of errors if any validation errors occur.
  * The program will not print the airline/flight details entered by the user (if the user enters valid arguments) unless the -print option is invoked.
- * The -textFile option will takethe specified file name (to be passed in as an argument right after the -textFile option), and check to see if the file
+ * The -textFile option will take the specified file name (to be passed in as an argument right after the -textFile option), and check to see if the file
  * exists. If it does exist, the program will parse the contents of the file and save the contents in an airline object (with flights). Each file contains 
  * just one airline and its flights. If the new airline matches the airline in the file, the program will add the new flight and write the airline and 
  * flights back to the file. If the file does not exist, the program will create the file and save the new airline into the file.
  * 
- * Options (-README, -textFile, and -print) MUST come before airline/flight arguments. And the filename MUST come directly after -textFile.
+ * Options (-README, -textFile, -pretty, and -print) MUST come before airline/flight arguments. And the filename MUST come directly after -textFile.
  */
 public class Project3 {
 
@@ -38,49 +38,94 @@ public class Project3 {
 		List<String> errorList = new ArrayList<String>();
 		Airline airline = new Airline("Alaska");
 		Flight flight = new Flight();
+		AbstractAirline parsedAirline = null;
+		Boolean readMeOption = containsReadMe(args);
+		Boolean correctNumberArgs = correctNumberOfArgs(args);
+		Boolean textFileOption = containsTextFile(args);
+		Boolean prettyOption = containsPretty(args);
+		Boolean printOption = containsPrint(args);
 		
 		if(args.length == 0) {
 			System.err.println("ERROR: Missing command line arguments");
 		}
 		
-		else if(containsReadMe(args) == true) {
+		else if(readMeOption) {
 			printReadMe();
 		}
 		
-		else if(correctNumberOfArgs(args) == true) {
+		else if(correctNumberArgs) {
 		    errorList = createAirlineAndFlight(args, airline, flight);
+		    String textFileName = "";
+		    String prettyFileName = "";
+		    
+		    if(textFileOption) {
+		    	textFileName = "";
+	    		for(int i = 0; i < args.length; ++i) {
+	    			if(args[i].equals("-textFile")) {
+	    				textFileName = args[i+1];
+	    				break;
+	    			}
+	    		}
+		    }
+		    
+		    if(prettyOption) {
+		    	prettyFileName = "";
+		    	for(int i = 0; i < args.length; ++i) {
+		    		if(args[i].equals("-pretty")) {
+		    			prettyFileName = args[i+1];
+		    			break;
+		    		}
+		    	}
+		    }
 		
 		    if(errorList.isEmpty()) {
-		    	if(containsTextFile(args)) {
-		    		
-		    		String fileName = "";
-		    		for(int i = 0; i < args.length; ++i) {
-		    			if(args[i].equals("-textFile")) {
-		    				fileName = args[i+1];
-		    				break;
-		    			}
-		    		}
-		    		
+		    	if(textFileOption) {
+		    		System.out.println("in the textfile option");
 					File file = null;
 					boolean fileExists = false;
-					file = new File(fileName);
+					file = new File(textFileName);
 					fileExists = file.exists();
-					TextDumper textDumper = new TextDumper(fileName);
+					TextDumper textDumper = new TextDumper(textFileName);
 					if (fileExists) {
-						parseFile(airline, flight, fileName, textDumper);
+						parsedAirline = parseFile(airline, flight, textFileName, textDumper);
 					}
 
 					else {
 						try {
 							textDumper.dump(airline);
 						} catch (IOException e) {
-							System.err.println("ERROR: Problem saving flight to " + fileName);
+							System.err.println("ERROR: Problem saving flight to " + textFileName);
 						}
 					} 
 
 		    	}
 		    	
-		    	if(containsPrint(args)) {
+		    	if(prettyOption) {
+	    			PrettyPrinter prettyPrinter = new PrettyPrinter(prettyFileName);
+	    			try {
+	    				if(parsedAirline != null) {
+	    					AbstractAirline filteredAirline = removeDuplicates(parsedAirline);
+	    					if(!prettyFileName.equals("-")) {
+	    						prettyPrinter.dump(filteredAirline);
+	    					}
+	    					else {
+	    						prettyPrinter.prettyPrintToStandardOut(filteredAirline);
+	    					}
+	    				}
+	    				else {
+	    					if(!prettyFileName.equals("-")) {
+	    						prettyPrinter.dump(airline);
+	    					}
+	    					else {
+	    						prettyPrinter.prettyPrintToStandardOut(airline);
+	    					}
+	    				}
+					} catch (IOException e) {
+						System.err.println("ERROR: Problem saving flight prettily to " + prettyFileName);
+					}
+		    	}
+		    	
+		    	if(printOption) {
 		    		Iterator<AbstractFlight> iterator = airline.getFlights().iterator();
 		    		while(iterator.hasNext()) {
 		    			System.out.println(iterator.next());
@@ -102,7 +147,38 @@ public class Project3 {
 	    System.exit(0);
 	  }
 
-	  
+	/**
+	 * Removes duplicate flights in an airline. Compares the source, departure time, destination, and arrival time. 
+	 * @param airline object
+	 * @return airline object with duplicate flights removed
+	 */
+	private static AbstractAirline removeDuplicates(AbstractAirline airline) {
+		Collection<AbstractFlight> flightsForAirline = airline.getFlights();
+		
+		List<Flight> listFlightsForAirline = new ArrayList<Flight>();
+		
+		Iterator<AbstractFlight> iterator = airline.getFlights().iterator();
+		while(iterator.hasNext()) {
+			AbstractFlight airlineFlight = iterator.next();
+			listFlightsForAirline.add((Flight) airlineFlight);
+			
+		}	
+		
+		for(int i = 0; i < listFlightsForAirline.size()-1; ++i) {
+			if(listFlightsForAirline.get(i).getSource().equals(listFlightsForAirline.get(i+1).getSource()) && 
+					listFlightsForAirline.get(i).getDepartureString().equals(listFlightsForAirline.get(i+1).getDepartureString()) && 
+					listFlightsForAirline.get(i).getDestination().equals(listFlightsForAirline.get(i+1).getDestination()) && 
+					listFlightsForAirline.get(i).getArrivalString().equals(listFlightsForAirline.get(i+1).getArrivalString())) {
+				listFlightsForAirline.remove(i+1);
+				--i;
+			}
+		}
+
+		((Airline) airline).setFlights(listFlightsForAirline);
+		return airline;
+	}
+
+
 	/**
 	 * This method parses the contents of a file (fileName) and saves the contents in an airline object (including flights). If the airline name in the file
 	 * matches the new airline name, the method will add the new flight to the airline and write it to the same file (via dump). If it does not match, the system
@@ -112,7 +188,7 @@ public class Project3 {
 	 * @param fileName
 	 * @param textDumper
 	 */
-	private static void parseFile(Airline airline, Flight flight, String fileName, TextDumper textDumper) {
+	private static AbstractAirline parseFile(Airline airline, Flight flight, String fileName, TextDumper textDumper) {
 		TextParser textParser = new TextParser(fileName);
 		AbstractAirline airlineFromFile;
 		try {
@@ -141,6 +217,8 @@ public class Project3 {
 				((Airline) airlineFromFile).setFlights(listFlightsForAirline);
 				
 				textDumper.dump(airlineFromFile);
+				
+				return airlineFromFile;
 			} 
 			else  {
 				System.err.println("ERROR: Airline entered does not match airline listed in " + fileName);
@@ -150,6 +228,8 @@ public class Project3 {
 		} catch (IOException e) {
 			System.err.println("ERROR: Problem adding flight to " + fileName);
 		}
+		
+		return null;
 	}
 
 	  
@@ -165,9 +245,9 @@ public class Project3 {
 			  if(args[i].equals("-README")) {
 				  return true;
 			  }
-			  if(args[i].charAt(0) != '-') {
-				  return false;
-			  }
+//			  if(args[i].charAt(0) != '-') {
+//				  return false;
+//			  }
 		  }
 		  
 		  return false;
@@ -185,9 +265,9 @@ public class Project3 {
 			  if(args[i].equals("-print")) {
 				  return true;
 			  }
-			  if(args[i].charAt(0) != '-' && !args[i].contains(".txt")) {
-				  return false;
-			  }
+//			  if(args[i].charAt(0) != '-' && !args[i].contains(".txt")) {
+//				  return false;
+//			  }
 		  }
 		  
 		  return false;
@@ -205,9 +285,29 @@ public class Project3 {
 			  if(args[i].equals("-textFile")) {
 				  return true;
 			  }
-			  if(args[i].charAt(0) != '-') {
-				  return false;
+//			  if(args[i].charAt(0) != '-') {
+//				  return false;
+//			  }
+		  }
+		  
+		  return false;
+	  }
+	  
+	  /**
+	   * Method checks to see if -pretty is invoked as one of the options. Options will only be accepted before the airline/flight arguments. The method 
+	   * will immediately return false once an argument without a '-' is encountered (this assumes that airline/flight arguments will not begin with a '-').
+	   * @param arguments from command line
+	   * @return true if one of the arguments classified as "options" is -textFile, otherwise return false
+	   */
+	  
+	  private static boolean containsPretty(String [] args) {
+		  for(int i = 0; i < args.length; ++i) {
+			  if(args[i].equals("-pretty")) {
+				  return true;
 			  }
+//			  if(args[i].charAt(0) != '-') {
+//				  return false;
+//			  }
 		  }
 		  
 		  return false;
@@ -233,22 +333,14 @@ public class Project3 {
 				 //verify options are -print, -textFile, or -README
 				 if(args[i].equals("-print") || args[i].equals("-README")) {
 					 ++optionsCount;
-					 
-					 //if options are not listed before airline/flight arguments, return failed validation
-					 //i would be equal to optionsCount if options are before arguments
-					 if(i > argsCount && i > optionsCount) {
-						 return false;
-					 }
 				 }
 				 else if(args[i].equals("-textFile")){ 
 					++optionsCount;
 			    	++i;
-					 
-					 //if options are not listed before airline/flight arguments, return failed validation
-					 //i would be equal to optionsCount if options are before arguments
-					 if(i > argsCount && i > optionsCount) {
-						 return false;
-					 }
+				 }
+				 else if(args[i].equals("-pretty")) {
+					 ++optionsCount;
+					 ++i;
 				 }
 				 //if argument is not -print, -README, -textFile, or a filename directly proceeding -textFile, 
 				 //assume they are a part of the airline/flight arguments
@@ -509,7 +601,7 @@ public class Project3 {
 	private static void printReadMe() {
 		System.out.println("\n------------------README------------------\n");
 		System.out.println("DENISE BANH\nCS510 | ADVANCED PROGRAMMING WITH JAVA");
-		System.out.println("PROJECT 2: WORKING WITH FILES\n");
+		System.out.println("PROJECT 3: PRETTY PRINTING YOUR AIRLINE\n");
 		System.out.println("This application contains classes that will track an airline as well as flights for the airline.\n"
 				+ "The Airline class consists of the airline's name and a List of Flight(s).\n"
 				+ "The Flight class consists of the flight number, source location, departure time, destination location, and arrival time\n"
@@ -523,6 +615,9 @@ public class Project3 {
 				+ "Each file contains just one airline and its flights. If the new airline matches the airline in the file, the program will add the new flight\n"
 				+ "and write the airline and flights back to the file. If the file does not exist, the program will create the file and save the new airline\n"
 				+ "into the file.\n"
+				+ "4) -pretty will print the airline in a pretty format. If -pretty is followed by a textfile name, it will write to the file. If it is\n"
+				+ "followed by a dash (-), it will be written to standard output. The list of flights will be sorted by source airport and chronologically\n"
+				+ "by time following the source airport. It will also remove duplicate flights"
 				+ "These options can be specified -before- the arguments\n"
 				+ "\n----------------END README----------------\n");
 	}
