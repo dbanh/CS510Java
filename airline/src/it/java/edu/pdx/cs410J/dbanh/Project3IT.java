@@ -26,8 +26,9 @@ public class Project3IT extends InvokeMainTestCase {
 	  @BeforeClass
 	  public static void createTempDirectoryForAirlineFile() throws IOException {
 	    File tmpDirectory = new File(System.getProperty("java.io.tmpdir"));
+	    File tmpDirectoryPretty = new File(System.getProperty("java.io.tmpdir"));
 	    airlineFile = new File(tmpDirectory, "airline.txt");
-	    prettyFile = new File(tmpDirectory, "prettyAirline.txt");
+	    prettyFile = new File(tmpDirectoryPretty, "prettyAirline.txt");
 	  }
 
 	  @AfterClass
