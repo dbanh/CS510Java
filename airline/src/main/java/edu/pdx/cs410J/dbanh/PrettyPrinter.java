@@ -73,6 +73,8 @@ public class PrettyPrinter implements AirlineDumper {
 			bufferedWriter.newLine();
 			
 			for(AbstractFlight flight: flights) {
+				Flight regularFlight = new Flight();
+				regularFlight = (Flight) flight;
 				
 				bufferedWriter.write("Flight number: ");
 				bufferedWriter.write(Integer.toString(flight.getNumber()));
@@ -81,13 +83,13 @@ public class PrettyPrinter implements AirlineDumper {
 				bufferedWriter.write(flight.getSource());
 				bufferedWriter.newLine();
 				bufferedWriter.write("Departure time: ");
-				bufferedWriter.write(flight.getDepartureString());
+				bufferedWriter.write(regularFlight.getDepartureStringShort());
 				bufferedWriter.newLine();
 				bufferedWriter.write("Destination: ");
 				bufferedWriter.write(flight.getDestination());
 				bufferedWriter.newLine();
 				bufferedWriter.write("Arrival time: ");
-				bufferedWriter.write(flight.getArrivalString());
+				bufferedWriter.write(regularFlight.getArrivalStringShort());
 				bufferedWriter.newLine();
 				bufferedWriter.write("Duration: ");
 				bufferedWriter.write(Integer.toString(calculateDuration(flight.getDeparture(), flight.getArrival())));
