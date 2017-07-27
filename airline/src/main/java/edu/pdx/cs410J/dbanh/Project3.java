@@ -80,7 +80,6 @@ public class Project3 {
 		
 		    if(errorList.isEmpty()) {
 		    	if(textFileOption) {
-		    		System.out.println("in the textfile option");
 					File file = null;
 					boolean fileExists = false;
 					file = new File(textFileName);

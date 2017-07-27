@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import edu.pdx.cs410J.AbstractAirline;
@@ -34,13 +35,15 @@ public class PrettyPrinter implements AirlineDumper {
 	 * This method will take in an airline object and writes the airline name, and all flights out to a file. 
 	 * The format will be:
 	 * <BEGINNING OF FILE>
-	 * AIRLINE NAME
+	 * AIRLINE: AIRLINE NAME
+	 * ___ flight[s]
 	 * 
-	 * Flight number - 
-	 * Source - 
-	 * Departure time - 
-	 * Destination - 
-	 * Arrival Time -
+	 * Flight number: 
+	 * Source:
+	 * Departure time: 
+	 * Destination:
+	 * Arrival Time:
+	 * Duration:
 	 * <END OF FILE>
 	 * 
 	 * The airline name and flights are each separated by a newline
@@ -86,6 +89,10 @@ public class PrettyPrinter implements AirlineDumper {
 				bufferedWriter.write("Arrival time: ");
 				bufferedWriter.write(flight.getArrivalString());
 				bufferedWriter.newLine();
+				bufferedWriter.write("Duration: ");
+				bufferedWriter.write(Integer.toString(calculateDuration(flight.getDeparture(), flight.getArrival())));
+				bufferedWriter.write(" minutes");
+				bufferedWriter.newLine();
 				bufferedWriter.newLine();
 			}
 		}
@@ -106,7 +113,7 @@ public class PrettyPrinter implements AirlineDumper {
 	}
 
 	public void prettyPrintToStandardOut(AbstractAirline airline) {
-		System.out.println("AIRLINE:" + airline.getName().toUpperCase());
+		System.out.println("AIRLINE: " + airline.getName().toUpperCase());
 		List<AbstractFlight> flights = new ArrayList<AbstractFlight>(airline.getFlights());
 		if(flights.size() > 1) {
 			System.out.println(flights.size() + " flights");
@@ -123,8 +130,14 @@ public class PrettyPrinter implements AirlineDumper {
 			System.out.println("Departure time: " + flight.getDepartureString());
 			System.out.println("Destination: " + flight.getDestination()); 
 			System.out.println("Arrival time: " + flight.getArrivalString());
+			System.out.println("Duration: " + Integer.toString(calculateDuration(flight.getDeparture(), flight.getArrival())) + " minutes");
 			System.out.println();
 		}
+	}
+	
+	private int calculateDuration(Date departure, Date arrival) {
+		long diffInMillies = arrival.getTime() - departure.getTime();
+		return (int) ((diffInMillies/1000)/60);
 	}
 	
 }
