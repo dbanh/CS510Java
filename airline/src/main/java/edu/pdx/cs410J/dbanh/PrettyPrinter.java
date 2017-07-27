@@ -73,8 +73,6 @@ public class PrettyPrinter implements AirlineDumper {
 			bufferedWriter.newLine();
 			
 			for(AbstractFlight flight: flights) {
-				Flight regularFlight = new Flight();
-				regularFlight = (Flight) flight;
 				
 				bufferedWriter.write("Flight number: ");
 				bufferedWriter.write(Integer.toString(flight.getNumber()));
@@ -83,13 +81,13 @@ public class PrettyPrinter implements AirlineDumper {
 				bufferedWriter.write(flight.getSource());
 				bufferedWriter.newLine();
 				bufferedWriter.write("Departure time: ");
-				bufferedWriter.write(regularFlight.getDepartureStringShort());
+				bufferedWriter.write(flight.getDepartureString());
 				bufferedWriter.newLine();
 				bufferedWriter.write("Destination: ");
 				bufferedWriter.write(flight.getDestination());
 				bufferedWriter.newLine();
 				bufferedWriter.write("Arrival time: ");
-				bufferedWriter.write(regularFlight.getArrivalStringShort());
+				bufferedWriter.write(flight.getArrivalString());
 				bufferedWriter.newLine();
 				bufferedWriter.write("Duration: ");
 				bufferedWriter.write(Integer.toString(calculateDuration(flight.getDeparture(), flight.getArrival())));
@@ -127,14 +125,12 @@ public class PrettyPrinter implements AirlineDumper {
 		System.out.println();
 		
 		for(AbstractFlight flight : flights) {
-			Flight regularFlight = new Flight();
-			regularFlight = (Flight) flight;
 			
 			System.out.println("Flight number: " + flight.getNumber());
 			System.out.println("Source: " + flight.getSource());
-			System.out.println("Departure time: " + regularFlight.getDepartureStringShort());
+			System.out.println("Departure time: " + flight.getDepartureString());
 			System.out.println("Destination: " + flight.getDestination()); 
-			System.out.println("Arrival time: " + regularFlight.getArrivalStringShort());
+			System.out.println("Arrival time: " + flight.getArrivalString());
 			System.out.println("Duration: " + Integer.toString(calculateDuration(flight.getDeparture(), flight.getArrival())) + " minutes");
 			System.out.println();
 		}

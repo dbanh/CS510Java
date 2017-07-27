@@ -37,11 +37,6 @@ public class Flight extends AbstractFlight implements Comparable<Flight> {
 
   @Override
   public String getDepartureString() {
-	  DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
-	  return dateFormat.format(departure);
-  }
-  
-  public String getDepartureStringShort() {
 	  Locale currentLocale = new Locale("en_US");
 	  DateFormat formatter = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, currentLocale);
 	  return formatter.format(this.departure);
@@ -58,15 +53,10 @@ public class Flight extends AbstractFlight implements Comparable<Flight> {
 
   @Override
   public String getArrivalString() {
-	  DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
-	  return dateFormat.format(arrival);
-  }
-  
-  public String getArrivalStringShort() {
 	  Locale currentLocale = new Locale("en_US");
 	  DateFormat formatter = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, currentLocale);
 	  return formatter.format(this.arrival);
-  }
+  } 
   
   public Date getDeparture() {
 	return departure;

@@ -3,7 +3,10 @@ package edu.pdx.cs410J.dbanh;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import edu.pdx.cs410J.AbstractAirline;
@@ -69,14 +72,21 @@ public class TextDumper implements AirlineDumper {
 				bufferedWriter.write("Source - ");
 				bufferedWriter.write(flight.getSource());
 				bufferedWriter.newLine();
+				
+				Date departure = flight.getDeparture();
+				DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
+				 
 				bufferedWriter.write("Departure time - ");
-				bufferedWriter.write(flight.getDepartureString());
+				bufferedWriter.write( dateFormat.format(departure));
 				bufferedWriter.newLine();
 				bufferedWriter.write("Destination - ");
 				bufferedWriter.write(flight.getDestination());
 				bufferedWriter.newLine();
+				
+				Date arrival = flight.getArrival();
+				dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
 				bufferedWriter.write("Arrival time - ");
-				bufferedWriter.write(flight.getArrivalString());
+				bufferedWriter.write(dateFormat.format(arrival));
 				bufferedWriter.newLine();
 				bufferedWriter.newLine();
 			}

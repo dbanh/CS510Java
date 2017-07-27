@@ -1,8 +1,0 @@
-UNITED
-
-Flight number - 42
-Source - ABE
-Departure time - 01/01/2001 01:11 AM
-Destination - PDX
-Arrival time - 03/03/2003 03:33 AM
-
