@@ -29,7 +29,7 @@ public class FlightTest {
 		
 	}
 
-    assertThat(flight.getArrivalString(), is("1/1/17 1:11 AM"));
+    assertThat(flight.getArrivalString(), is("01/01/2017 01:11 AM"));
   }
 
   @Test
@@ -85,9 +85,9 @@ public class FlightTest {
 	  assertThat(airline.getName(), is(name));
 	  assertThat(flight.getNumber(), is(number));
 	  assertThat(flight.getSource(), is(source));
-	  assertThat(flight.getDepartureString(), is("1/1/17 1:11 AM"));
+	  assertThat(flight.getDepartureString(), is("01/01/2017 01:11 AM"));
 	  assertThat(flight.getDestination(), is(destination));
-	  assertThat(flight.getArrivalString(), is("1/1/17 3:11 AM"));
+	  assertThat(flight.getArrivalString(), is("01/01/2017 03:11 AM"));
   }
   
 }

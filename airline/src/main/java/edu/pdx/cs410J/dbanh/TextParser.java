@@ -210,7 +210,7 @@ public class TextParser implements AirlineParser {
 			
 			if(validDate && validTime && validAmPm) {
 				String sb = new StringBuilder(dateTime[0]).append(" ").append(dateTime[1]).append(" ").append(dateTime[2]).toString();
-				SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yy hh:mm a");
+				SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
 				Date date;
 				try {
 					date = formatter.parse(sb);
