@@ -7,6 +7,9 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Locale;
 
+import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.Logger;
 import edu.pdx.cs410J.AbstractFlight;
 
 public class Flight extends AbstractFlight implements Comparable<Flight> {
@@ -16,7 +19,8 @@ public class Flight extends AbstractFlight implements Comparable<Flight> {
 	private Date departure;
 	private Date arrival;
 	private int number;
-	
+	final org.slf4j.Logger logger = LoggerFactory.getLogger(Flight.class);
+	  
   @Override
   public int getNumber() {
     return number;
@@ -39,6 +43,7 @@ public class Flight extends AbstractFlight implements Comparable<Flight> {
   public String getDepartureString() {
 	  Locale currentLocale = new Locale("en_US");
 	  DateFormat formatter = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, currentLocale);
+	  logger.debug("getDepartureString: " + departure);
 	  return formatter.format(this.departure);
   }
 
@@ -55,6 +60,7 @@ public class Flight extends AbstractFlight implements Comparable<Flight> {
   public String getArrivalString() {
 	  Locale currentLocale = new Locale("en_US");
 	  DateFormat formatter = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, currentLocale);
+	  logger.debug("getArrivalString: " + arrival);
 	  return formatter.format(this.arrival);
   } 
   

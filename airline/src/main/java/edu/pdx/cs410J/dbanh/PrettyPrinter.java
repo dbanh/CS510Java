@@ -3,6 +3,7 @@ package edu.pdx.cs410J.dbanh;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -30,6 +31,8 @@ public class PrettyPrinter implements AirlineDumper {
 	public PrettyPrinter(String fileName) {
 		this.fileName = fileName;
 	}
+	
+	public PrettyPrinter() {}
 
 	/**
 	 * This method will take in an airline object and writes the airline name, and all flights out to a file. 
@@ -134,6 +137,33 @@ public class PrettyPrinter implements AirlineDumper {
 			System.out.println("Duration: " + Integer.toString(calculateDuration(flight.getDeparture(), flight.getArrival())) + " minutes");
 			System.out.println();
 		}
+	}
+	
+	public void prettyPrintToWeb(AbstractAirline airline, PrintWriter pw ){
+
+		pw.println("AIRLINE: " + airline.getName().toUpperCase());
+		List<AbstractFlight> flights = new ArrayList<AbstractFlight>(airline.getFlights());
+		if(flights.size() > 1) {
+			pw.println(flights.size() + " flights");
+		}
+		else {
+			pw.println(flights.size() + " flight");
+		}
+		
+		pw.println();
+		
+		for(AbstractFlight flight : flights) {
+			
+			pw.println("Flight number: " + flight.getNumber());
+			pw.println("Source: " + flight.getSource());
+			pw.println("Departure time: " + flight.getDepartureString());
+			pw.println("Destination: " + flight.getDestination()); 
+			pw.println("Arrival time: " + flight.getArrivalString());
+			pw.println("Duration: " + Integer.toString(calculateDuration(flight.getDeparture(), flight.getArrival())) + " minutes");
+			pw.println();
+		}
+		
+	    pw.flush();
 	}
 	
 	private int calculateDuration(Date departure, Date arrival) {
