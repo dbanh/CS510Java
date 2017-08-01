@@ -38,4 +38,8 @@ public void setFlights(List<Flight> flights) {
 	this.flights = abstractFlights;
 }
 
+public void setAbstractFlights(List<AbstractFlight> flights) {
+	this.flights = flights;
+}
+
 }

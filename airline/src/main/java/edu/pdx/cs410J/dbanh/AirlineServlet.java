@@ -19,9 +19,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,7 +34,7 @@ import java.util.Map;
 public class AirlineServlet extends HttpServlet {
 //  private final Map<String, String> data = new HashMap<>();
   private Airline airline;
-  final org.slf4j.Logger logger = LoggerFactory.getLogger(AirlineServlet.class);
+  final static org.slf4j.Logger logger = LoggerFactory.getLogger(AirlineServlet.class);
   
   public void init(ServletConfig servletConfig) throws ServletException {
 	    airline = new Airline();
@@ -54,27 +56,39 @@ public class AirlineServlet extends HttpServlet {
       String lastPart = uri.substring(uri.lastIndexOf('/') + 1, uri.length());
 
       if (lastPart.equals("flights")) {
-        writeFlights(response);
 
-//      } else {
-//        try {
-//          int id = Integer.parseInt(lastPart);
-//          Person person = this.tree.getPerson(id);
-//          if (person == null) {
-//            response.sendError(HttpServletResponse.SC_NOT_FOUND);
-//            
-//          } else {
-//           writePeople(response, person);
-//          }
-//
-//        } catch (NumberFormatException ex) {
-//          response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Malformed person id: " + lastPart);
-//          return;
-//        }
+    	if(airline.getName() == null) {
+    		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No saved airline to display");
+    		return;
+    	}
+  		String airlineName = getParameter("name", request);
+  		String src = getParameter("src", request);
+  		String dest = getParameter("dest", request);
+  		
+		logger.debug("searching flights: " + airlineName + " src: " + src + " dest: " + dest);
+  		
+  		if(airlineName == null && src == null && dest == null) {
+  	    	logger.debug("writing all flights");
+  			writeFlights(response);
+  		}
+        
+        else if(airlineName != null && src != null && dest != null){
+  			logger.debug("searching flights: " + airlineName + " " + src + " " + dest);
+  			searchForFlights(airlineName, src, dest, response);
+  		} 
+        
+        else {
+  			response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+  					"Missing search parameters. Airline name, source airport, & destination airport required.");
+  			return;
+  		}  
       }
+      
+      response.setStatus(HttpServletResponse.SC_OK);
   }
 
-  /**
+
+/**
    * Handles an HTTP POST request by storing the key/value pair specified by the
    * "key" and "value" request parameters.  It writes the key/value pair to the
    * HTTP response.
@@ -86,7 +100,11 @@ public class AirlineServlet extends HttpServlet {
       
       logger.debug("POSTING");
 
+      String uri = request.getRequestURI();
+      logger.debug("doPost URI: " + uri);
       createAirline(request, response);
+      
+      response.setStatus(HttpServletResponse.SC_OK);
   }
 
   /**
@@ -178,27 +196,60 @@ public class AirlineServlet extends HttpServlet {
 //      return this.data.get(key);
 //  }
   
+  private boolean checkParameters(String airline, String flightNumber, String src, String departTime, String dest, String arriveTime, HttpServletResponse response) throws IOException {
+	  boolean allParameters = true;
+	  if(airline == null) {
+	      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing airline name");
+	      allParameters =  false;
+	  }
+	  if(flightNumber == null) {
+		  response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing flight number");
+		  allParameters =  false;
+	  }
+	  if(src == null) {
+		  response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing airport source");
+		  allParameters =  false;
+	  }
+	  if(departTime == null) {
+		  response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing departure time");
+		  allParameters =  false;
+	  }
+	  if(dest == null) {
+		  response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing airport destination");
+		  allParameters =  false;
+	  }
+	  if(arriveTime == null) {
+		  response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing arrival time");
+		  allParameters =  false;
+	  }
+	  
+	  return allParameters;
+  }
+  
   private void createAirline(HttpServletRequest request, HttpServletResponse response) throws IOException {
 	    String airlineName = getParameter("name", request);
-	    if (airlineName == null) {
-	      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing Gender");
-	      return;
-	    }
-	    
-	    if(airline == null) {
-	    	airline = new Airline();
+    	String flightNumber = getParameter("flightNumber", request);
+    	String src = getParameter("src", request);
+    	String departTime = getParameter("departTime", request);
+    	String dest = getParameter("dest", request);
+    	String arriveTime = getParameter("arriveTime", request);
+    	
+    	//If there are issues with the parameters
+    	if(!checkParameters(airlineName, flightNumber, src, departTime, dest, arriveTime, response)) {
+  	      return;
+    	}
+
+	   	    
+	    if((airline.getName() != null) 
+	    		&& (!airline.getName().equals(airlineName))) {
+		      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Airline name does not match saved airline. Saved airline: " + airline.getName() + "  Requested airline: " + airlineName);
+		      return;
 	    }
 
 	    logger.debug("Airline name: " + airlineName) ;
 	    airline.setName(airlineName);
 
     	Flight flight = new Flight();;
- 	    
-    	String flightNumber = getParameter("flightNumber", request);
-    	String src = getParameter("src", request);
-    	String departTime = getParameter("departTime", request);
-    	String dest = getParameter("dest", request);
-    	String arriveTime = getParameter("arriveTime", request);
 
  	    try {
  	    	flight.setNumber(Integer.parseInt(flightNumber));
@@ -214,35 +265,36 @@ public class AirlineServlet extends HttpServlet {
  	        return;
  	    }
  	    
-// 	    String departure = validateDateTime(departTime);
-//
-// 	    if(departure != null) {
+ 	    String departure = validateDateTime(departTime);
+
+ 	    if(departure != null) {
 			SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
 			Date date;
 			try {
 				logger.debug("departure time: " + departTime);
 				date = formatter.parse(departTime);
+				logger.debug("formatted date: " + date);
 				flight.setDeparture(date);
 				logger.debug("set departure time");
 			} catch (ParseException e) {
 	 	        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad departure time: " + departTime);
 	 	        return;
 			}
-// 	    } else {
-// 	        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad departure time: " + departTime);
-// 	        return;
-// 	    }
+ 	    } else {
+ 	        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad departure time: " + departTime);
+ 	        return;
+ 	    }
  	    
  	   if(validateAirportCode(dest)) {
- 	    	flight.setSource(dest);
+ 	    	flight.setDestination(dest);
  	    } else {
  	        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad source: " + dest);
  	        return;
  	    }
  	   
-// 	    String arrival = validateDateTime(arriveTime); 
-//
-// 	    if(arrival != null) {
+ 	    String arrival = validateDateTime(arriveTime); 
+
+ 	    if(arrival != null) {
 			SimpleDateFormat formatterArrival = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
 			Date dateArrival;
 			try {
@@ -254,10 +306,10 @@ public class AirlineServlet extends HttpServlet {
 	 	        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad departure time: " + arriveTime);
 	 	        return;
 			}
-// 	    } else {
-// 	        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad departure time: " + arriveTime);
-// 	        return;
-// 	    }
+ 	    } else {
+ 	        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad departure time: " + arriveTime);
+ 	        return;
+ 	    }
 
  	    airline.addFlight(flight);
 
@@ -271,12 +323,19 @@ public class AirlineServlet extends HttpServlet {
 		boolean validAmPm = validateAmPm(dateTimeSplit[2]);
 		String sb;
 		
+		logger.debug("entered date: " + dateTime);
+		logger.debug("0: "+ dateTimeSplit[0] + " " + validDate);
+		logger.debug("1: "+ dateTimeSplit[1] + " " + validTime);
+		logger.debug("2: "+ dateTimeSplit[2] + " " + validAmPm);
+		
 		if(validDate && validTime && validAmPm) {
 			sb = new StringBuilder(dateTimeSplit[0]).append(" ").append(dateTimeSplit[1]).append(" ").append(dateTimeSplit[2]).toString();
 		}
 		else {
+			logger.debug("returning null");
 			return null;
 		}
+		logger.debug("returning " + sb );
 		return sb;
   	}
   
@@ -376,15 +435,20 @@ public class AirlineServlet extends HttpServlet {
 		int month;
 		int day;
 		
+		logger.debug("month: " + dateFields[0]);
+		logger.debug("day: " + dateFields[1]);
+		logger.debug("year: " + dateFields[2]);
+		
 		if(dateFields.length != 3) {
 			return false;
 		}
 		
 		try {
   		month = Integer.valueOf(dateFields[0]);
-  	} catch (NumberFormatException e) {
-  		return false;
-  	}
+	  	} catch (NumberFormatException e) {
+	  		logger.debug("bad month");
+	  		return false;
+	  	}
 		
 		if(month > 12) {
 			return false;
@@ -392,15 +456,17 @@ public class AirlineServlet extends HttpServlet {
 		
 		try {
   		day = Integer.valueOf(dateFields[1]);
-  	} catch (NumberFormatException e) {
-  		return false;
-  	}
+	  	} catch (NumberFormatException e) {
+	  		logger.debug("bad day");
+	  		return false;
+	  	}
 		
 		if(day > 31) {
 			return false;
 		}
 		
-		if(dateFields[2].length() != 4) {
+		if(dateFields[2].length() != 4 && dateFields[2].length() != 2) {
+			logger.debug("bad year");
 			return false;
 		}
 		
@@ -415,6 +481,50 @@ public class AirlineServlet extends HttpServlet {
 	      logger.debug("writing airline: "+ airline.getName());
 	      prettyPrinter.prettyPrintToWeb(airline, pw);
 
+	      logger.debug("finishing pretty printer");
 	      response.setStatus( HttpServletResponse.SC_OK );
 	 }
+	 
+
+	  private void searchForFlights(String airlineName, String src, String dest, HttpServletResponse response) throws IOException {
+		
+		  if(airline.getName() == null) {
+		      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "There is no saved airline.");
+		      return;
+		  }
+		  if (airline.getName().equals(airlineName)) {
+			List<AbstractFlight> flights = new ArrayList<AbstractFlight>();
+			flights = (List<AbstractFlight>) airline.getFlights();
+			List<AbstractFlight> matchingFlights = new ArrayList<AbstractFlight>();
+			logger.debug("flights list size: " + flights.size());
+			for (AbstractFlight flight : flights) {
+				logger.debug("flight source: " + flight.getSource() + "  search source: " + src);
+				logger.debug("flight dest: " + flight.getDestination() + "  search dest: " + dest);
+				if (flight.getSource().toUpperCase().equals(src.toUpperCase()) && flight.getDestination().toUpperCase().equals(dest.toUpperCase())) {
+					matchingFlights.add(flight);
+				}
+			}
+			if (matchingFlights.size() > 0) {
+				PrintWriter pw = response.getWriter();
+				PrettyPrinter prettyPrinter = new PrettyPrinter();
+				Airline matchingAirlineFlights = new Airline();
+				matchingAirlineFlights.setName(airlineName);
+				matchingAirlineFlights.setAbstractFlights(matchingFlights);
+
+				logger.debug("Writing matching flights");
+				logger.debug("writing airline: " + airline.getName());
+				prettyPrinter.prettyPrintToWeb(matchingAirlineFlights, pw);
+
+				response.setStatus(HttpServletResponse.SC_OK);
+			} else {
+			      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Found no flights that match parameters. Source: " + src + "  Destination: +" + dest);
+			      return;
+			}
+		  }
+		  else {
+		      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Saved airline does not match airline in search request. Saved airline: " + airline.getName() + "  Searching for: +" + airlineName);
+		      return;
+		  }
+		
+	  }
 }

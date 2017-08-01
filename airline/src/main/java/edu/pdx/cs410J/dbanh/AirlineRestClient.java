@@ -38,6 +38,15 @@ public class AirlineRestClient extends HttpRequestHelper
       Response response = get(this.url);
       return Messages.parseKeyValueMap(response.getContent());
     }
+    
+    /**
+     * Returns all flights from the server
+     */
+    public String getAllFlights() throws IOException {
+      Response response = get(this.url);
+//      return Messages.parseKeyValueMap(response.getContent());
+      return response.getContent();
+    }
 
     /**
      * Returns the value for the given key
@@ -53,6 +62,11 @@ public class AirlineRestClient extends HttpRequestHelper
       Response response = postToMyURL("key", key, "value", value);
       throwExceptionIfNotOkayHttpStatus(response);
     }
+    
+    public void addAirlineAndFlight(String airlineName, String flightNumber, String src, String departTime, String dest, String arriveTime) throws IOException {
+        Response response = postToMyURL("name", airlineName, "flightNumber", flightNumber, "src", src, "departTime", departTime, "dest", dest, "arriveTime", arriveTime);
+        throwExceptionIfNotOkayHttpStatus(response);
+      }
 
     @VisibleForTesting
     Response postToMyURL(String... keysAndValues) throws IOException {

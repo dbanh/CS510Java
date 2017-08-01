@@ -31,6 +31,11 @@ public class Messages
     {
         return String.format( "Mapped %s to %s", key, value );
     }
+    
+    public static String addFlight( String airlineName, String src, String dest )
+    {
+        return String.format( "Added %s flight from %s to %s", airlineName, src, dest );
+    }
 
     public static String allMappingsDeleted() {
         return "All mappings have been deleted";
