@@ -317,7 +317,12 @@ public class AirlineServlet extends HttpServlet {
   
   
   	private static String validateDateTime(String dateTime) {
+  		logger.debug("valdinating date time: " + dateTime);
+
   		String[] dateTimeSplit = dateTime.split(" ");
+  		logger.debug("0: "+ dateTimeSplit[0] );
+		logger.debug("1: "+ dateTimeSplit[1] );
+		logger.debug("2: "+ dateTimeSplit[2] );
  	    boolean validDate = validateDate(dateTimeSplit[0]);
 		boolean validTime = validateTime(dateTimeSplit[1]);
 		boolean validAmPm = validateAmPm(dateTimeSplit[2]);
@@ -517,7 +522,7 @@ public class AirlineServlet extends HttpServlet {
 
 				response.setStatus(HttpServletResponse.SC_OK);
 			} else {
-			      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Found no flights that match parameters. Source: " + src + "  Destination: +" + dest);
+			      response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Found no flights that match parameters. Source: " + src + "  Destination: " + dest);
 			      return;
 			}
 		  }

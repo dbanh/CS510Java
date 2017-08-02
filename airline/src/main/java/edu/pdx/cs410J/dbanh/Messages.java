@@ -36,6 +36,16 @@ public class Messages
     {
         return String.format( "Added %s flight from %s to %s", airlineName, src, dest );
     }
+    
+    public static String searchFlight( String flights )
+    {
+        return String.format( flights );
+    }
+    
+    public static String noFlightsFound( String src, String dest)
+    {
+        return String.format( "No flights found leaving from %s and arriving at %s", src, dest );
+    }
 
     public static String allMappingsDeleted() {
         return "All mappings have been deleted";

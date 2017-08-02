@@ -6,6 +6,8 @@ import edu.pdx.cs410J.web.HttpRequestHelper;
 import java.io.IOException;
 import java.util.Map;
 
+import org.slf4j.LoggerFactory;
+
 import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
@@ -17,6 +19,8 @@ public class AirlineRestClient extends HttpRequestHelper
 {
     private static final String WEB_APP = "airline";
     private static final String SERVLET = "flights";
+    
+    final static org.slf4j.Logger logger = LoggerFactory.getLogger(AirlineServlet.class);
 
     private final String url;
 
@@ -57,15 +61,23 @@ public class AirlineRestClient extends HttpRequestHelper
       String content = response.getContent();
       return Messages.parseKeyValuePair(content).getValue();
     }
+    
+    public String searchForFlights(String airlineName, String src, String dest) throws IOException {
+        Response response = get(this.url, "name", airlineName, "src", src, "dest", dest);
+        return response.getContent();
+      }
 
     public void addKeyValuePair(String key, String value) throws IOException {
       Response response = postToMyURL("key", key, "value", value);
       throwExceptionIfNotOkayHttpStatus(response);
     }
     
-    public void addAirlineAndFlight(String airlineName, String flightNumber, String src, String departTime, String dest, String arriveTime) throws IOException {
+    public String addAirlineAndFlight(String airlineName, String flightNumber, String src, String departTime, String dest, String arriveTime) throws IOException {
         Response response = postToMyURL("name", airlineName, "flightNumber", flightNumber, "src", src, "departTime", departTime, "dest", dest, "arriveTime", arriveTime);
-        throwExceptionIfNotOkayHttpStatus(response);
+        if(response.getCode() != HTTP_OK) {
+        	return response.getContent();
+        }
+        return null;
       }
 
     @VisibleForTesting
@@ -81,7 +93,8 @@ public class AirlineRestClient extends HttpRequestHelper
     private Response throwExceptionIfNotOkayHttpStatus(Response response) {
       int code = response.getCode();
       if (code != HTTP_OK) {
-        throw new AppointmentBookRestException(code);
+//        throw new AppointmentBookRestException(code);
+    	  logger.debug("response content: " + response.getContent());
       }
       return response;
     }

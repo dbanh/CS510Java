@@ -41,6 +41,8 @@ public class Project4 {
 		Boolean correctNumberArgs = correctNumberOfArgs(args);
 		Boolean printOption = containsPrint(args);
 		Boolean hostOption = containsHost(args);
+		Boolean searchOption = containsSearch(args);
+		Boolean correctNumberOfArgsForSearch = correctNumberOfArgsForSearch(args);
 		
 		logger.debug("correct number of args: " + correctNumberArgs);
 		
@@ -53,6 +55,111 @@ public class Project4 {
 		
 		if(readMeOption) {
 			printReadMe();
+		}
+		
+		else if(searchOption) {
+			logger.debug("in search option");
+			if(hostOption && correctNumberOfArgsForSearch) {
+				String hostName = null;
+				String portString = null;
+				
+		    	for(int i = 0; i < args.length; ++i) {
+		    		if(args[i].equals("-host")) {
+	    				hostName = args[i+1];
+	    				break;
+		    		}
+		    	}
+		    	
+		    	for(int i = 0; i < args.length; ++i) {
+		    		if(args[i].equals("-port")) {
+		    			portString = args[i+1];
+		    			break;
+		    		}
+		    	}
+				
+				if (hostName == null) {
+					usage(MISSING_ARGS);
+
+				} else if (portString == null) {
+					usage("Missing port");
+				}
+				
+				int port;
+				try {
+					port = Integer.parseInt(portString);
+
+				} catch (NumberFormatException ex) {
+					usage("Port \"" + portString + "\" must be an integer");
+					return;
+				}
+				
+				AirlineRestClient client = new AirlineRestClient(hostName, port);
+				String message = null;
+				String airlineName = null;
+				String src = null;
+				String dest = null;
+				boolean validParameters = true;
+				logger.debug("host: " + hostName + "  port: " + port);
+				
+				
+				try {
+					int startingPosition = args.length - 3; //accounts for any options included in the argument list
+					
+					for (int i = startingPosition; i < args.length; ++i) {
+						
+						if(i == startingPosition) {
+					    	 airlineName = args[i];
+						}
+
+						else if( i == startingPosition+1) {
+							if(validateAirportCode(args[i])) {
+								src = args[i];
+							}
+							else {
+								validParameters = false;
+							}
+						}
+
+						else if(i == startingPosition+2) {
+							if(validateAirportCode(args[i])) {
+								dest = args[i];
+							}
+							else {
+								validParameters = false;
+							}
+						}
+					} 
+					
+					if (validParameters) {
+						logger.debug("valid parameteres");
+						logger.debug("searching flights: " + airlineName + " " + src + " " + dest + " ");
+						String result = client.searchForFlights(airlineName, src, dest);
+						logger.debug("added flight");
+						if(result != null) {
+							message = Messages.searchFlight(result);
+						} else {
+							message = Messages.noFlightsFound(src, dest);
+						}
+					} else {
+						System.err.println("ERROR: Must search for valid airport codes");
+				        System.exit(1);
+					}
+
+				} catch (IOException ex) {
+					System.err.println("ERROR: Contact with server unsuccessful. Check credentials and try again.");
+					return;
+				}
+				System.out.println(message);
+			} else {
+				if(!correctNumberOfArgsForSearch) {
+					System.err.println("ERROR: Missing or extraneous command line arguments");
+			        System.exit(1);
+				}
+				if(!hostOption) {
+					System.err.println("ERROR: Host and port needed to execute search");
+			        System.exit(1);
+				}
+			}
 		}
 		
 		else if(hostOption) {
@@ -135,7 +242,7 @@ public class Project4 {
 							}
 							
 							else {
-								departTime = args[i];
+								departTime = new StringBuilder(args[i]).append(" ").append(args[i+1]).append(" ").append(args[i+2]).toString();
 							}
 						}
 						else if(i == startingPosition+6) {
@@ -159,7 +266,7 @@ public class Project4 {
 							}
 							
 							else {
-								arriveTime = args[i];
+								arriveTime = new StringBuilder(args[i]).append(" ").append(args[i+1]).append(" ").append(args[i+2]).toString();
 							}
 						}
 					} 
@@ -167,11 +274,33 @@ public class Project4 {
 					if (validParameters) {
 						logger.debug("valid parameteres");
 						logger.debug("airline and flight: " + airlineName + flightNumber + src + departTime + dest + arriveTime);
-						client.addAirlineAndFlight(airlineName, flightNumber, src, departTime, dest, arriveTime);
+						String result = client.addAirlineAndFlight(airlineName, flightNumber, src, departTime, dest, arriveTime);
 						logger.debug("added flight");
-						message = Messages.addFlight(airlineName, src, dest);
+						if(result == null) {
+							message = Messages.addFlight(airlineName, src, dest);
+							
+						    if(printOption) {
+						    	logger.debug("in print");
+							    errorList = createAirlineAndFlight(args, airline, flight);
+							    
+							    if(!errorList.isEmpty()) {
+							    	logger.debug("error list is NOT empty");
+							    	for(String error : errorList) {
+							    		System.err.println(error);
+							    	}
+								 } else {
+									 logger.debug("printing " + airline.getFlights().size() + " flights");
+						    		Iterator<AbstractFlight> iterator = airline.getFlights().iterator();
+						    		while(iterator.hasNext()) {
+						    			System.out.println(iterator.next());
+						    		}
+					    		}
+					    	}	
+						} else {
+							message = result;
+						}
 					} else {
-						System.err.println("ERROR: Missing command line arguments");
+						System.err.println("ERROR: Parameters invalid. Please check and try again.");
 				        System.exit(1);
 					}
 
@@ -180,69 +309,12 @@ public class Project4 {
 					return;
 				}
 				System.out.println(message);
-			}	
-//			if (correctNumberArgs) {
-//				String hostName = null;
-//				String portString = null;
-//				String key = null;
-//				String value = null;
-//				for (String arg : args) {
-//					if (hostName == null) {
-//						hostName = arg;
-//
-//					} else if (portString == null) {
-//						portString = arg;
-//
-//					} else if (key == null) {
-//						key = arg;
-//
-//					} else if (value == null) {
-//						value = arg;
-//
-//					} else {
-//						usage("Extraneous command line argument: " + arg);
-//					}
-//				}
-//				if (hostName == null) {
-//					usage(MISSING_ARGS);
-//
-//				} else if (portString == null) {
-//					usage("Missing port");
-//				}
-//				int port;
-//				try {
-//					port = Integer.parseInt(portString);
-//
-//				} catch (NumberFormatException ex) {
-//					usage("Port \"" + portString + "\" must be an integer");
-//					return;
-//				}
-//				AirlineRestClient client = new AirlineRestClient(hostName, port);
-//				String message;
-//				try {
-//					if (key == null) {
-//						// Print all key/value pairs
-//						Map<String, String> keysAndValues = client.getAllKeysAndValues();
-//						StringWriter sw = new StringWriter();
-//						Messages.formatKeyValueMap(new PrintWriter(sw, true), keysAndValues);
-//						message = sw.toString();
-//
-//					} else if (value == null) {
-//						// Print all values of key
-//						message = Messages.formatKeyValuePair(key, client.getValue(key));
-//
-//					} else {
-//						// Post the key/value pair
-//						client.addKeyValuePair(key, value);
-//						message = Messages.mappedKeyValue(key, value);
-//					}
-//
-//				} catch (IOException ex) {
-//					error("While contacting server: " + ex);
-//					return;
-//				}
-//				System.out.println(message);
-//			}	
+			}	else {
+				if(!correctNumberArgs) {
+					System.err.println("ERROR: Missing or extraneous command line arguments");
+			        System.exit(1);
+				}
+			}
 		}
 		
 		else if(correctNumberArgs) {
@@ -270,11 +342,6 @@ public class Project4 {
 		
 		System.exit(0);
     }
-
-	private static String getHost(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	private static boolean correctNumberOfArgsForSearch(String[] args) {
 		int argsCount = 0;
@@ -333,53 +400,44 @@ public class Project4 {
         PrintStream err = System.err;
         err.println("** " + message);
         err.println();
-        err.println("usage: java Project4 host port [key] [value]");
-        err.println("  host    Host of web server");
-        err.println("  port    Port of web server");
-        err.println("  key     Key to query");
-        err.println("  value   Value to add to server");
+        err.println("usage: java Project4 host port name flightNumber src deartTime dest ArriveTime");
+        err.println("  host			Host of web server");
+        err.println("  port    		Port of web server");
+        err.println("  name    		Airline name");
+        err.println("  flightNumber Flight number");
+        err.println("  src			Departure airport");
+        err.println("  departTime   Time of departure");
+        err.println("  dest   		Destination airport");
+        err.println("  arriveTime   Time of arrival");
         err.println();
-        err.println("This simple program posts key/value pairs to the server");
-        err.println("If no value is specified, then all values are printed");
-        err.println("If no key is specified, all key/value pairs are printed");
+        err.println("This simple program posts airline flights to the server");
+        err.println("User can search for flights with airline name, departure airport, and destination airport");
         err.println();
 
         System.exit(1);
     }
     
 
-	/**
-	 * Removes duplicate flights in an airline. Compares the source, departure time, destination, and arrival time. 
-	 * @param airline object
-	 * @return airline object with duplicate flights removed
-	 */
-	private static AbstractAirline removeDuplicates(AbstractAirline airline) {
-		Collection<AbstractFlight> flightsForAirline = airline.getFlights();
-		
-		List<Flight> listFlightsForAirline = new ArrayList<Flight>();
-		
-		Iterator<AbstractFlight> iterator = airline.getFlights().iterator();
-		while(iterator.hasNext()) {
-			AbstractFlight airlineFlight = iterator.next();
-			listFlightsForAirline.add((Flight) airlineFlight);
-			
-		}	
-		
-		for(int i = 0; i < listFlightsForAirline.size()-1; ++i) {
-			if(listFlightsForAirline.get(i).getSource().equals(listFlightsForAirline.get(i+1).getSource()) && 
-					listFlightsForAirline.get(i).getDepartureString().equals(listFlightsForAirline.get(i+1).getDepartureString()) && 
-					listFlightsForAirline.get(i).getDestination().equals(listFlightsForAirline.get(i+1).getDestination()) && 
-					listFlightsForAirline.get(i).getArrivalString().equals(listFlightsForAirline.get(i+1).getArrivalString())) {
-				listFlightsForAirline.remove(i+1);
-				--i;
-			}
-		}
-
-		((Airline) airline).setFlights(listFlightsForAirline);
-		return airline;
+    /**
+     * This method checks for -search in the options
+     * @param args
+     * @return true if args contains -search
+     */
+	private static Boolean containsSearch(String[] args) {
+    	for(int i = 0; i < args.length; ++i) {
+			  if(args[i].equals("-search")) {
+				  return true;
+			  }
+    	}
+    	return false;
 	}
-	
 
+	
+	/**
+	 * This method checks for -host in the options
+	 * @param args
+	 * @return true if args contains -host
+	 */
     private static Boolean containsHost(String[] args) {
     	for(int i = 0; i < args.length; ++i) {
 			  if(args[i].equals("-host")) {

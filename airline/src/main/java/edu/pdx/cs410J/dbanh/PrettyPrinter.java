@@ -5,7 +5,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import edu.pdx.cs410J.AbstractAirline;
@@ -140,19 +143,30 @@ public class PrettyPrinter implements AirlineDumper {
 	}
 	
 	public void prettyPrintToWeb(AbstractAirline airline, PrintWriter pw ){
+		
+		List<Flight> listFlightsForAirline = new ArrayList<Flight>();
+		
+		Iterator<AbstractFlight> iterator = airline.getFlights().iterator();
+		while(iterator.hasNext()) {
+			AbstractFlight airlineFlight = iterator.next();
+			listFlightsForAirline.add((Flight) airlineFlight);
+		}	
+		Collections.sort(listFlightsForAirline);
+		
+		List<Flight> curatedFlights = removeDuplicates(listFlightsForAirline);
+		
 
 		pw.println("AIRLINE: " + airline.getName().toUpperCase());
-		List<AbstractFlight> flights = new ArrayList<AbstractFlight>(airline.getFlights());
-		if(flights.size() > 1) {
-			pw.println(flights.size() + " flights");
+		if(curatedFlights.size() > 1) {
+			pw.println(curatedFlights.size() + " flights");
 		}
 		else {
-			pw.println(flights.size() + " flight");
+			pw.println(curatedFlights.size() + " flight");
 		}
 		
 		pw.println();
 		
-		for(AbstractFlight flight : flights) {
+		for(AbstractFlight flight : curatedFlights) {
 			
 			pw.println("Flight number: " + flight.getNumber());
 			pw.println("Source: " + flight.getSource());
@@ -164,6 +178,26 @@ public class PrettyPrinter implements AirlineDumper {
 		}
 		
 	    pw.flush();
+	}
+	
+	/**
+	 * Removes duplicate flights in an airline. Compares the source, departure time, destination, and arrival time. 
+	 * @param airline object
+	 * @return airline object with duplicate flights removed
+	 */
+	private static List<Flight> removeDuplicates(List<Flight> flights) {
+		
+		for(int i = 0; i < flights.size()-1; ++i) {
+			if(flights.get(i).getSource().equals(flights.get(i+1).getSource()) && 
+					flights.get(i).getDepartureString().equals(flights.get(i+1).getDepartureString()) && 
+					flights.get(i).getDestination().equals(flights.get(i+1).getDestination()) && 
+					flights.get(i).getArrivalString().equals(flights.get(i+1).getArrivalString())) {
+				flights.remove(i+1);
+				--i;
+			}
+		}
+
+		return flights;
 	}
 	
 	private int calculateDuration(Date departure, Date arrival) {
