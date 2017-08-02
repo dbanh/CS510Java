@@ -1,9 +1,5 @@
 package edu.pdx.cs410J.dbanh;
 
-import com.google.common.annotations.VisibleForTesting;
-
-import ch.qos.logback.classic.Logger;
-import edu.pdx.cs410J.AbstractAirline;
 import edu.pdx.cs410J.AbstractFlight;
 import edu.pdx.cs410J.AirportNames;
 
@@ -13,43 +9,34 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
- * This servlet ultimately provides a REST API for working with an
- * <code>Airline</code>.  However, in its current state, it is an example
- * of how to use HTTP and Java servlets to store simple key/value pairs.
+ * This servlet ultimately provides a REST API for working with an airline and flights. The servlet will post an airline and flight as well
+ * as get all flights that match the provided source and destination airport. 
  */
 public class AirlineServlet extends HttpServlet {
 //  private final Map<String, String> data = new HashMap<>();
   private Airline airline;
-  final static org.slf4j.Logger logger = LoggerFactory.getLogger(AirlineServlet.class);
+//  final static org.slf4j.Logger logger = LoggerFactory.getLogger(AirlineServlet.class);
   
   public void init(ServletConfig servletConfig) throws ServletException {
 	    airline = new Airline();
   }
 
   /**
-   * Handles an HTTP GET request from a client by writing the value of the key
-   * specified in the "key" HTTP parameter to the HTTP response.  If the "key"
-   * parameter is not specified, all of the key/value pairs are written to the
-   * HTTP response.
+   * Handles an HTTP GET request from a client returning all of the flights or by searching for flights that
+   * depart from the src airport and arrives at the dest airport.
    */
   @Override
   protected void doGet( HttpServletRequest request, HttpServletResponse response ) throws ServletException, IOException
   {
-	  logger.debug("In the GET");
       response.setContentType( "text/plain" );
 
       String uri = request.getRequestURI();
@@ -65,15 +52,11 @@ public class AirlineServlet extends HttpServlet {
   		String src = getParameter("src", request);
   		String dest = getParameter("dest", request);
   		
-		logger.debug("searching flights: " + airlineName + " src: " + src + " dest: " + dest);
-  		
   		if(airlineName == null && src == null && dest == null) {
-  	    	logger.debug("writing all flights");
   			writeFlights(response);
   		}
         
         else if(airlineName != null && src != null && dest != null){
-  			logger.debug("searching flights: " + airlineName + " " + src + " " + dest);
   			searchForFlights(airlineName, src, dest, response);
   		} 
         
@@ -89,19 +72,12 @@ public class AirlineServlet extends HttpServlet {
 
 
 /**
-   * Handles an HTTP POST request by storing the key/value pair specified by the
-   * "key" and "value" request parameters.  It writes the key/value pair to the
-   * HTTP response.
+   * Handles an HTTP POST request by storing the airline and flight
    */
   @Override
   protected void doPost( HttpServletRequest request, HttpServletResponse response ) throws ServletException, IOException
   {
       response.setContentType( "text/plain" );
-      
-      logger.debug("POSTING");
-
-      String uri = request.getRequestURI();
-      logger.debug("doPost URI: " + uri);
       createAirline(request, response);
       
       response.setStatus(HttpServletResponse.SC_OK);
@@ -127,50 +103,6 @@ public class AirlineServlet extends HttpServlet {
   }
 
   /**
-   * Writes an error message about a missing parameter to the HTTP response.
-   *
-   * The text of the error message is created by {@link Messages#missingRequiredParameter(String)}
-   */
-  private void missingRequiredParameter( HttpServletResponse response, String parameterName )
-      throws IOException
-  {
-      String message = Messages.missingRequiredParameter(parameterName);
-      response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED, message);
-  }
-
-//  /**
-//   * Writes the value of the given key to the HTTP response.
-//   *
-//   * The text of the message is formatted with
-//   * {@link Messages#formatKeyValuePair(String, String)}
-//   */
-//  private void writeValue( String key, HttpServletResponse response ) throws IOException {
-//      String value = this.data.get(key);
-//
-//      PrintWriter pw = response.getWriter();
-//      pw.println(Messages.formatKeyValuePair(key, value));
-//
-//      pw.flush();
-//
-//      response.setStatus( HttpServletResponse.SC_OK );
-//  }
-//
-//  /**
-//   * Writes all of the key/value pairs to the HTTP response.
-//   *
-//   * The text of the message is formatted with
-//   * {@link Messages#formatKeyValuePair(String, String)}
-//   */
-//  private void writeAllMappings( HttpServletResponse response ) throws IOException {
-//      PrintWriter pw = response.getWriter();
-//      Messages.formatKeyValueMap(pw, data);
-//
-//      pw.flush();
-//
-//      response.setStatus( HttpServletResponse.SC_OK );
-//  }
-
-  /**
    * Returns the value of the HTTP request parameter with the given name.
    *
    * @return <code>null</code> if the value of the parameter is
@@ -185,17 +117,19 @@ public class AirlineServlet extends HttpServlet {
       return value;
     }
   }
-
-//  @VisibleForTesting
-//  void setValueForKey(String key, String value) {
-//      this.data.put(key, value);
-//  }
-//
-//  @VisibleForTesting
-//  String getValueForKey(String key) {
-//      return this.data.get(key);
-//  }
   
+  /**
+   * This method checks the parameters of the service call to make sure the parameters are valid
+   * @param airline
+   * @param flightNumber
+   * @param src
+   * @param departTime
+   * @param dest
+   * @param arriveTime
+   * @param response
+   * @return
+   * @throws IOException
+   */
   private boolean checkParameters(String airline, String flightNumber, String src, String departTime, String dest, String arriveTime, HttpServletResponse response) throws IOException {
 	  boolean allParameters = true;
 	  if(airline == null) {
@@ -226,6 +160,12 @@ public class AirlineServlet extends HttpServlet {
 	  return allParameters;
   }
   
+  /**
+   * Creates an airline if an airline does not already exists and adds flights to it
+   * @param request
+   * @param response
+   * @throws IOException
+   */
   private void createAirline(HttpServletRequest request, HttpServletResponse response) throws IOException {
 	    String airlineName = getParameter("name", request);
     	String flightNumber = getParameter("flightNumber", request);
@@ -246,7 +186,6 @@ public class AirlineServlet extends HttpServlet {
 		      return;
 	    }
 
-	    logger.debug("Airline name: " + airlineName) ;
 	    airline.setName(airlineName);
 
     	Flight flight = new Flight();;
@@ -271,11 +210,8 @@ public class AirlineServlet extends HttpServlet {
 			SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
 			Date date;
 			try {
-				logger.debug("departure time: " + departTime);
 				date = formatter.parse(departTime);
-				logger.debug("formatted date: " + date);
 				flight.setDeparture(date);
-				logger.debug("set departure time");
 			} catch (ParseException e) {
 	 	        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad departure time: " + departTime);
 	 	        return;
@@ -298,10 +234,8 @@ public class AirlineServlet extends HttpServlet {
 			SimpleDateFormat formatterArrival = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
 			Date dateArrival;
 			try {
-				logger.debug("arrival time: " + arriveTime);
 				dateArrival = formatterArrival.parse(arriveTime);
 				flight.setArrival(dateArrival);
-				logger.debug("set arrival time");
 			} catch (ParseException e) {
 	 	        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad departure time: " + arriveTime);
 	 	        return;
@@ -315,32 +249,25 @@ public class AirlineServlet extends HttpServlet {
 
 	}
   
-  
+  /**
+   * This method validates the date and time according to MM/dd/yyyy hh:mm a and returns a string with the formatted date time
+   * @param dateTime
+   * @return
+   */
   	private static String validateDateTime(String dateTime) {
-  		logger.debug("valdinating date time: " + dateTime);
 
   		String[] dateTimeSplit = dateTime.split(" ");
-  		logger.debug("0: "+ dateTimeSplit[0] );
-		logger.debug("1: "+ dateTimeSplit[1] );
-		logger.debug("2: "+ dateTimeSplit[2] );
  	    boolean validDate = validateDate(dateTimeSplit[0]);
 		boolean validTime = validateTime(dateTimeSplit[1]);
 		boolean validAmPm = validateAmPm(dateTimeSplit[2]);
 		String sb;
 		
-		logger.debug("entered date: " + dateTime);
-		logger.debug("0: "+ dateTimeSplit[0] + " " + validDate);
-		logger.debug("1: "+ dateTimeSplit[1] + " " + validTime);
-		logger.debug("2: "+ dateTimeSplit[2] + " " + validAmPm);
-		
 		if(validDate && validTime && validAmPm) {
 			sb = new StringBuilder(dateTimeSplit[0]).append(" ").append(dateTimeSplit[1]).append(" ").append(dateTimeSplit[2]).toString();
 		}
 		else {
-			logger.debug("returning null");
 			return null;
 		}
-		logger.debug("returning " + sb );
 		return sb;
   	}
   
@@ -440,10 +367,6 @@ public class AirlineServlet extends HttpServlet {
 		int month;
 		int day;
 		
-		logger.debug("month: " + dateFields[0]);
-		logger.debug("day: " + dateFields[1]);
-		logger.debug("year: " + dateFields[2]);
-		
 		if(dateFields.length != 3) {
 			return false;
 		}
@@ -451,7 +374,6 @@ public class AirlineServlet extends HttpServlet {
 		try {
   		month = Integer.valueOf(dateFields[0]);
 	  	} catch (NumberFormatException e) {
-	  		logger.debug("bad month");
 	  		return false;
 	  	}
 		
@@ -462,7 +384,6 @@ public class AirlineServlet extends HttpServlet {
 		try {
   		day = Integer.valueOf(dateFields[1]);
 	  	} catch (NumberFormatException e) {
-	  		logger.debug("bad day");
 	  		return false;
 	  	}
 		
@@ -471,26 +392,34 @@ public class AirlineServlet extends HttpServlet {
 		}
 		
 		if(dateFields[2].length() != 4 && dateFields[2].length() != 2) {
-			logger.debug("bad year");
 			return false;
 		}
 		
 		return true;
 	}
 	
+	/**
+	 * writes all flights prettily
+	 * @param response
+	 * @throws IOException
+	 */
 	 private void writeFlights(HttpServletResponse response) throws IOException {
 	      PrintWriter pw = response.getWriter();
 	      PrettyPrinter prettyPrinter = new PrettyPrinter();
-	      
-	      logger.debug("Writing flights");
-	      logger.debug("writing airline: "+ airline.getName());
 	      prettyPrinter.prettyPrintToWeb(airline, pw);
 
-	      logger.debug("finishing pretty printer");
 	      response.setStatus( HttpServletResponse.SC_OK );
 	 }
 	 
 
+	 /**
+	  * Searches for flights based on the airport name, source airport, and destination airport. The method will also pretty print the flights.
+	  * @param airlineName
+	  * @param src
+	  * @param dest
+	  * @param response
+	  * @throws IOException
+	  */
 	  private void searchForFlights(String airlineName, String src, String dest, HttpServletResponse response) throws IOException {
 		
 		  if(airline.getName() == null) {
@@ -501,10 +430,7 @@ public class AirlineServlet extends HttpServlet {
 			List<AbstractFlight> flights = new ArrayList<AbstractFlight>();
 			flights = (List<AbstractFlight>) airline.getFlights();
 			List<AbstractFlight> matchingFlights = new ArrayList<AbstractFlight>();
-			logger.debug("flights list size: " + flights.size());
 			for (AbstractFlight flight : flights) {
-				logger.debug("flight source: " + flight.getSource() + "  search source: " + src);
-				logger.debug("flight dest: " + flight.getDestination() + "  search dest: " + dest);
 				if (flight.getSource().toUpperCase().equals(src.toUpperCase()) && flight.getDestination().toUpperCase().equals(dest.toUpperCase())) {
 					matchingFlights.add(flight);
 				}
@@ -516,8 +442,6 @@ public class AirlineServlet extends HttpServlet {
 				matchingAirlineFlights.setName(airlineName);
 				matchingAirlineFlights.setAbstractFlights(matchingFlights);
 
-				logger.debug("Writing matching flights");
-				logger.debug("writing airline: " + airline.getName());
 				prettyPrinter.prettyPrintToWeb(matchingAirlineFlights, pw);
 
 				response.setStatus(HttpServletResponse.SC_OK);
