@@ -7,17 +7,24 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.shared.UmbrellaException;
+import com.google.gwt.i18n.shared.DateTimeFormat;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.ibm.icu.impl.duration.DateFormatter;
+
+import edu.pdx.cs410J.AirportNames;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
+import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,6 +36,7 @@ public class AirlineGwt implements EntryPoint {
   private final Alerter alerter;
   private final AirlineServiceAsync airlineService;
   private final Logger logger;
+  static final String DATE_FORMAT_PATTERN = "MM/dd/yyyy hh:mm a";
 
   @VisibleForTesting
   Button showAirlineButton;
@@ -127,17 +135,29 @@ public class AirlineGwt implements EntryPoint {
 	saveAirlineButton.addClickHandler(new ClickHandler() {
 		@Override
 		public void onClick(ClickEvent arg0) {
-			Airline airline = new Airline();
-			airline.setName(airlineName.getText());
-			Flight flight = new Flight();
-			int flightNum = Integer.parseInt(flightNumber.getText());
-			flight.setNumber(flightNum);
-			flight.setSource(source.getText());
-			flight.setDestination(destination.getText());
-			flight.setDepartureString(departure.getText());
-			flight.setArrivalString(arrival.getText());
-			airline.addFlight(flight);
-			saveAirline(airline);
+			List<String> errorList = validateAirline(airlineName.getText(), flightNumber.getText(), source.getText(), departure.getText(), destination.getText(), arrival.getText());
+			
+			if(errorList.size() == 0) {
+				Airline airline = new Airline();
+				airline.setName(airlineName.getText());
+				Flight flight = new Flight();
+				int flightNum = Integer.parseInt(flightNumber.getText());
+				flight.setNumber(flightNum);
+				flight.setSource(source.getText());
+				flight.setDestination(destination.getText());
+				flight.setDepartureString(departure.getText());
+				flight.setArrivalString(arrival.getText());
+				airline.addFlight(flight);
+				saveAirline(airline);
+			} else {
+				StringBuilder sb = new StringBuilder();
+		        for (String error : errorList) {
+		          sb.append(error);
+		          sb.append("\n");
+		        }
+		        alerter.alert(sb.toString());
+				
+			}
 		}
 	});
 	  
@@ -258,6 +278,99 @@ public class AirlineGwt implements EntryPoint {
 		}
 	});
   }
+  
+  private List<String> validateAirline(String airlineName, String flightNumber, String src, String departure, String destination, String arrival) {
+	  
+		List<String> errorList = new ArrayList<String>();
+		
+		if(airlineName.isEmpty()) {
+			errorList.add("ERROR: Airline name required");
+		}
+		
+		if(!flightNumber.isEmpty()) {
+	    	try {
+	    		int number = Integer.valueOf(flightNumber);
+	    	} catch (NumberFormatException e) {
+	    		errorList.add("ERROR: Flight number is non-numeric");
+	    	} 
+		} else {
+			errorList.add("ERROR: Flight number is required");
+		}
+		
+		if(!src.isEmpty()) {
+			if(!validateAirportCode(src)) {
+				errorList.add("ERROR: Source airport code is not valid. Valid codes are 3 characters long, may only contains letters, and must be a real code.");
+			}
+		} else {
+			errorList.add("ERROR: Departure airport is required");
+		}
+		
+		if(!departure.isEmpty()) {
+//			boolean validDate = validateDate(args[i]);
+//			boolean validTime = validateTime(args[i+1]);
+//			boolean validAmPm = validateAmPm(args[i+2]);
+//			
+//			if(validDate == false) {
+//				errorList.add("ERROR: Departure date is not in the correct format. (Correct format: MM/DD/YYYY)");
+//			}
+//			if(validTime == false || validAmPm == false) {
+//				errorList.add("ERROR: Departure time is not in the correct format. (Correct format: HH:MM AM/PM)");
+//			}
+			
+//			else {
+//				String sb = new StringBuilder(args[i]).append(" ").append(args[i+1]).append(" ").append(args[i+2]).toString();
+				Date date = null;
+				DateTimeFormat dateTimeFormat = DateTimeFormat.getFormat(DATE_FORMAT_PATTERN);
+				try {
+					date = dateTimeFormat.parse(departure);
+				} catch (IllegalArgumentException e) {
+					errorList.add("ERROR: Depature date/time is not in the correct format. (Correct format: MM/DD/YYYY HH:MM AM/PM)");
+				}
+		} else {
+			errorList.add("ERROR: Departure date/time is required");
+		}
+		
+		if(!destination.isEmpty()) {
+			if(!validateAirportCode(destination)) {
+				errorList.add("ERROR: Destination airport code is not valid. Valid codes are 3 characters long, may only contains letters, and must be a real code.");
+			}
+		} else {
+			errorList.add("ERROR: Destination airport required");
+		}
+		
+		if(!arrival.isEmpty()) {
+			Date date = null;
+			DateTimeFormat dateTimeFormat = DateTimeFormat.getFormat(DATE_FORMAT_PATTERN);
+			try {
+				date = dateTimeFormat.parse(arrival);
+			} catch (IllegalArgumentException e) {
+				errorList.add("ERROR: Arrival date/time is not in the correct format. (Correct format: MM/DD/YYYY HH:MM AM/PM)");
+			}
+		} else {
+			errorList.add("ERROR: Arrival date/time is required");
+		}
+		
+		return errorList;  
+  }
+
+/**
+ * This method checks to see if the airport code entered is a valid code. It is valid if it is exactly 3 characters long and only contains letters.
+ * This method does not check that the airport code is a "real" airport code. 
+ * @param airportCode
+ * @return true if the airport code passed in is valid, false otherwise
+ */
+private static boolean validateAirportCode(String airportCode) {
+	if(airportCode.length() != 3) {
+		return false;
+	}
+	if(airportCode.matches(".*\\d+.*")) {
+		return false;
+	}
+	if(AirportNames.getName(airportCode.toUpperCase()) != null) {
+		return true;
+	}
+	return false; 
+}
 
   @Override
   public void onModuleLoad() {
