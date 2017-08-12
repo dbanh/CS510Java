@@ -18,7 +18,7 @@ public class Airline extends AbstractAirline<Flight>
 
   }
 
-  private List<Flight> flights = new ArrayList<Flight>();
+    private List<Flight> flights = new ArrayList<Flight>();
 	private String name;
 	
 	@Override

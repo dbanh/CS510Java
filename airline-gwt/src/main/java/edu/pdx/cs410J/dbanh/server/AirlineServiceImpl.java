@@ -10,11 +10,19 @@ import edu.pdx.cs410J.dbanh.client.AirlineService;
  */
 public class AirlineServiceImpl extends RemoteServiceServlet implements AirlineService
 {
+  Airline airline;
+	
   @Override
   public Airline getAirline() {
-    Airline airline = new Airline();
-    airline.addFlight(new Flight());
     return airline;
+  }
+  
+  public void addFlight(Flight flight) {
+	  airline.addFlight(flight);
+  }
+  
+  public void addAirline(Airline airline) {
+	  this.airline = airline;
   }
 
   @Override
