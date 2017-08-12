@@ -22,4 +22,6 @@ public interface AirlineServiceAsync {
    * Always throws a declared exception so that we can see GWT handles it.
    */
   void throwDeclaredException(AsyncCallback<Void> async);
+
+void saveAirline(Airline airline, AsyncCallback<Airline> asyncCallback);
 }

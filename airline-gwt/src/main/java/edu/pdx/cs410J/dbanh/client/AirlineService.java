@@ -23,5 +23,9 @@ public interface AirlineService extends RemoteService {
    * Always throws a declared exception so that we can see GWT handles it.
    */
   void throwDeclaredException() throws IllegalStateException;
-
+  
+  /**
+   * Saves airline into server
+   */
+  void saveAirline(Airline airline);
 }

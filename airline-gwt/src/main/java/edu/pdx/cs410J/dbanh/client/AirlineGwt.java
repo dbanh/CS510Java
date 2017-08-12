@@ -14,7 +14,10 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -73,6 +76,12 @@ public class AirlineGwt implements EntryPoint {
 
     this.alerter.alert(sb.toString());
   }
+  
+  public void alertOnSuccess() {
+	  StringBuilder sb = new StringBuilder();
+	  sb.append("Flight successfully added");
+	  this.alerter.alert(sb.toString());
+  }
 
   private Throwable unwrapUmbrellaException(Throwable throwable) {
     if (throwable instanceof UmbrellaException) {
@@ -90,13 +99,45 @@ public class AirlineGwt implements EntryPoint {
 	
 	final TextBox airlineName = new TextBox();
 	airlineName.setName("airlineName");
+	airlineName.getElement().setPropertyString("placeholder", "Airline name");
+	
+	final TextBox flightNumber = new TextBox();
+	flightNumber.setName("flightNumber");
+	flightNumber.getElement().setPropertyString("placeholder", "Flight number");
+	
+	final TextBox source = new TextBox();
+	source.setName("source");
+	source.getElement().setPropertyString("placeholder", "Departure airport");
+	
+	final TextBox departure = new TextBox();
+	departure.setName("departure");
+	departure.getElement().setPropertyString("placeholder", "Departure");
+	
+	//TODO: maybe turn this into three fields for date
+	
+	final TextBox destination = new TextBox();
+	destination.setName("destination");
+	destination.getElement().setPropertyString("placeholder", "Arrival airport");
+	
+	final TextBox arrival = new TextBox();
+	arrival.setName("arrival");
+	arrival.getElement().setPropertyString("placeholder", "Arrival");
+	
 	saveAirlineButton = new Button("Save airline");
 	saveAirlineButton.addClickHandler(new ClickHandler() {
 		@Override
 		public void onClick(ClickEvent arg0) {
 			Airline airline = new Airline();
 			airline.setName(airlineName.getText());
-			saveAirline();
+			Flight flight = new Flight();
+			int flightNum = Integer.parseInt(flightNumber.getText());
+			flight.setNumber(flightNum);
+			flight.setSource(source.getText());
+			flight.setDestination(destination.getText());
+			flight.setDepartureString(departure.getText());
+			flight.setArrivalString(arrival.getText());
+			airline.addFlight(flight);
+			saveAirline(airline);
 		}
 	});
 	  
@@ -132,6 +173,13 @@ public class AirlineGwt implements EntryPoint {
       }
     });
 
+    panel.add(airlineName);
+    panel.add(flightNumber);
+    panel.add(source);
+    panel.add(departure);
+    panel.add(destination);
+    panel.add(arrival);
+    panel.add(saveAirlineButton);
     panel.add(showAirlineButton);
     panel.add(showUndeclaredExceptionButton);
     panel.add(showDeclaredExceptionButton);
@@ -195,9 +243,20 @@ public class AirlineGwt implements EntryPoint {
     });
   }
   
-  private void saveAirline() {
+  private void saveAirline(Airline airline) {
 	  logger.info("Calling saveAirline");
-	  
+	  airlineService.saveAirline(airline, new AsyncCallback<Airline>() {
+
+		@Override
+		public void onFailure(Throwable arg0) {
+			alertOnException(arg0);
+		}
+
+		@Override
+		public void onSuccess(Airline arg0) {
+			alertOnSuccess();
+		}
+	});
   }
 
   @Override

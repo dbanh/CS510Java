@@ -10,19 +10,12 @@ import edu.pdx.cs410J.dbanh.client.AirlineService;
  */
 public class AirlineServiceImpl extends RemoteServiceServlet implements AirlineService
 {
-  Airline airline;
+	
+  Airline airline;	
 	
   @Override
   public Airline getAirline() {
     return airline;
-  }
-  
-  public void addFlight(Flight flight) {
-	  airline.addFlight(flight);
-  }
-  
-  public void addAirline(Airline airline) {
-	  this.airline = airline;
   }
 
   @Override
@@ -45,5 +38,14 @@ public class AirlineServiceImpl extends RemoteServiceServlet implements AirlineS
   protected void doUnexpectedFailure(Throwable unhandled) {
     unhandled.printStackTrace(System.err);
     super.doUnexpectedFailure(unhandled);
+  }
+
+  @Override
+  public void saveAirline(Airline newAirline) {
+	if(airline == null) {
+		airline = new Airline();
+	}
+		
+	this.airline = newAirline;
   }
 }
