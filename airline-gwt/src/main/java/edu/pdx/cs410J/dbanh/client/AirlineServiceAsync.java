@@ -23,5 +23,7 @@ public interface AirlineServiceAsync {
    */
   void throwDeclaredException(AsyncCallback<Void> async);
 
-void saveAirline(Airline airline, AsyncCallback<Airline> asyncCallback);
+  void saveAirline(Airline airline, AsyncCallback<Airline> asyncCallback);
+
+  void searchFlights(String airline, String src, String dest, AsyncCallback<Airline> asyncCallback);
 }

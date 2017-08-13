@@ -26,6 +26,17 @@ public interface AirlineService extends RemoteService {
   
   /**
    * Saves airline into server
+   * @param Airline
    */
-  void saveAirline(Airline airline);
+  void saveAirline(Airline airline) throws IllegalArgumentException;
+  
+  /**
+   * Searches for airline on the server
+   * @param airline
+   * @param src
+   * @param dest
+ * @return 
+ * @throws Throwable 
+   */
+  Airline searchFlights(String airline, String src, String dest) throws IllegalArgumentException, Throwable;
 }

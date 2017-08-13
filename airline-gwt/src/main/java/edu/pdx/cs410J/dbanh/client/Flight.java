@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.ibm.icu.text.DateFormat;
 
 public class Flight extends AbstractFlight implements Comparable<Flight>
@@ -57,10 +58,8 @@ public class Flight extends AbstractFlight implements Comparable<Flight>
   }
 
   public String getDepartureString() {
-//	  Locale currentLocale = new Locale("en_US");
-//	  DateFormat formatter = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, currentLocale);
-//	  return formatter.format(this.departure);
-	  return this.departureString;
+	  DateTimeFormat fmt = DateTimeFormat.getFormat("MM/dd/yyyy hh:mm a");
+	  return fmt.format(departure);
   }
 
   public String getDestination() {
@@ -80,7 +79,8 @@ public class Flight extends AbstractFlight implements Comparable<Flight>
   }
 
   public String getArrivalString() {
-    return this.arrivalString;
+	  DateTimeFormat fmt = DateTimeFormat.getFormat("MM/dd/yyyy hh:mm a");
+	  return fmt.format(arrival);
   }
   
   @Override

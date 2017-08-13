@@ -12,19 +12,16 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.ibm.icu.impl.duration.DateFormatter;
-
 import edu.pdx.cs410J.AirportNames;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -45,13 +42,16 @@ public class AirlineGwt implements EntryPoint {
   Button saveAirlineButton;
 
   @VisibleForTesting
-  Button showUndeclaredExceptionButton;
+  Button searchFlightsButton;
 
   @VisibleForTesting
   Button showDeclaredExceptionButton;
 
   @VisibleForTesting
   Button showClientSideExceptionButton;
+  
+  @VisibleForTesting
+  TextArea airlinePrettyText = new TextArea();
 
   public AirlineGwt() {
     this(new Alerter() {
@@ -90,6 +90,31 @@ public class AirlineGwt implements EntryPoint {
 	  sb.append("Flight successfully added");
 	  this.alerter.alert(sb.toString());
   }
+  
+  public void alertOnFailureToSaveAirline() {
+	  StringBuilder sb = new StringBuilder();
+	  sb.append("Airline requested does not match airline saved on server");
+	  this.alerter.alert(sb.toString());
+  }
+  
+  public void alertOnFailureToSearchAirline() {
+	  StringBuilder sb = new StringBuilder();
+	  sb.append("No airline to search");
+	  this.alerter.alert(sb.toString());
+  }
+  
+  public void alertOnFailureToFindFlights() {
+	  StringBuilder sb = new StringBuilder();
+	  sb.append("No matching flights found");
+	  this.alerter.alert(sb.toString());
+  }
+  
+  public void alertOnFailureToSearchFlights() {
+	  StringBuilder sb = new StringBuilder();
+	  sb.append("Airline requested not found on server");
+	  this.alerter.alert(sb.toString());
+  }
+
 
   private Throwable unwrapUmbrellaException(Throwable throwable) {
     if (throwable instanceof UmbrellaException) {
@@ -145,7 +170,22 @@ public class AirlineGwt implements EntryPoint {
 				flight.setNumber(flightNum);
 				flight.setSource(source.getText());
 				flight.setDestination(destination.getText());
+				
+				Date departureDate = null;
+				DateTimeFormat dateTimeFormat = DateTimeFormat.getFormat(DATE_FORMAT_PATTERN);
+				try {
+					departureDate = dateTimeFormat.parse(departure.getText());
+					flight.setDeparture(departureDate);
+				} catch (IllegalArgumentException e) {
+				}
 				flight.setDepartureString(departure.getText());
+				
+				Date arrivalDate = null;
+				try {
+					arrivalDate = dateTimeFormat.parse(arrival.getText());
+					flight.setArrival(arrivalDate);
+				} catch (IllegalArgumentException e) {
+				}
 				flight.setArrivalString(arrival.getText());
 				airline.addFlight(flight);
 				saveAirline(airline);
@@ -168,12 +208,24 @@ public class AirlineGwt implements EntryPoint {
         showAirline();
       }
     });
+    
+	final TextBox airlineToSearch = new TextBox();
+	airlineToSearch.setName("airlineToSearch");
+	airlineToSearch.getElement().setPropertyString("placeholder", "Airline name");
+	
+	final TextBox sourceToSearch = new TextBox();
+	sourceToSearch.setName("sourceToSearch");
+	sourceToSearch.getElement().setPropertyString("placeholder", "Departure airport");
+	
+	final TextBox destinationToSearch = new TextBox();
+	destinationToSearch.setName("destinationToSearch");
+	destinationToSearch.getElement().setPropertyString("placeholder", "Destination airport");
 
-    showUndeclaredExceptionButton = new Button("Show undeclared exception");
-    showUndeclaredExceptionButton.addClickHandler(new ClickHandler() {
+	searchFlightsButton = new Button("Search for flights");
+	searchFlightsButton.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent clickEvent) {
-        showUndeclaredException();
+        searchFlights(airlineToSearch.getText(), sourceToSearch.getText(), destinationToSearch.getText());
       }
     });
 
@@ -192,6 +244,10 @@ public class AirlineGwt implements EntryPoint {
         throwClientSideException();
       }
     });
+    
+    airlinePrettyText.setCharacterWidth(80);
+    airlinePrettyText.setVisibleLines(20);
+    
 
     panel.add(airlineName);
     panel.add(flightNumber);
@@ -201,8 +257,11 @@ public class AirlineGwt implements EntryPoint {
     panel.add(arrival);
     panel.add(saveAirlineButton);
     panel.add(showAirlineButton);
-    panel.add(showUndeclaredExceptionButton);
-    panel.add(showDeclaredExceptionButton);
+    panel.add(airlineToSearch);
+    panel.add(sourceToSearch);
+    panel.add(destinationToSearch);
+    panel.add(searchFlightsButton);
+    panel.add(airlinePrettyText);
     panel.add(showClientSideExceptionButton);
   }
 
@@ -252,13 +311,18 @@ public class AirlineGwt implements EntryPoint {
 
       @Override
       public void onSuccess(Airline airline) {
-        StringBuilder sb = new StringBuilder(airline.toString());
-        Collection<Flight> flights = airline.getFlights();
-        for (Flight flight : flights) {
-          sb.append(flight);
-          sb.append("\n");
-        }
-        alerter.alert(sb.toString());
+        if (airline != null) {
+			StringBuilder sb = new StringBuilder(airline.toString());
+			sb.append("\n");
+			Collection<Flight> flights = airline.getFlights();
+			for (Flight flight : flights) {
+				sb.append(flight);
+				sb.append("\n");
+			}
+			alerter.alert(sb.toString());
+		} else {
+			alerter.alert("No airline to display");
+		}
       }
     });
   }
@@ -269,7 +333,7 @@ public class AirlineGwt implements EntryPoint {
 
 		@Override
 		public void onFailure(Throwable arg0) {
-			alertOnException(arg0);
+			alertOnFailureToSaveAirline();
 		}
 
 		@Override
@@ -277,6 +341,43 @@ public class AirlineGwt implements EntryPoint {
 			alertOnSuccess();
 		}
 	});
+  }
+  
+  private void searchFlights(String airline, String src, String dest) {
+	  logger.info("Calling searchFlights");
+	  airlineService.searchFlights(airline, src, dest, new AsyncCallback<Airline>() {
+
+		@Override
+		public void onFailure(Throwable t) {
+			if(t instanceof IllegalArgumentException) {
+				alertOnFailureToSearchFlights();
+			} else {
+				alertOnFailureToSearchAirline();
+			}
+		}
+
+		@Override
+		public void onSuccess(Airline airline) {
+			if(airline != null) {
+				prettyPrintAirline(airline, airlinePrettyText);
+			} else {
+				alertOnFailureToFindFlights();
+			}
+		}
+	
+	  });
+  }
+  
+  private void prettyPrintAirline(Airline airline, TextArea airlinePrettyText) {
+	    PrettyPrinter pretty = new PrettyPrinter();
+	    try {
+	      pretty.dump(airline);
+
+	    } catch (IOException e) {
+	      alertOnException(e);
+	    }
+
+	    airlinePrettyText.setText(pretty.getPrettyText());
   }
   
   private List<String> validateAirline(String airlineName, String flightNumber, String src, String departure, String destination, String arrival) {

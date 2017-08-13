@@ -1,6 +1,15 @@
 package edu.pdx.cs410J.dbanh.server;
 
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.servlet.http.HttpServletResponse;
+
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+import com.sun.tools.internal.ws.wsdl.document.jaxws.Exception;
+
+import edu.pdx.cs410J.AbstractFlight;
 import edu.pdx.cs410J.dbanh.client.Airline;
 import edu.pdx.cs410J.dbanh.client.Flight;
 import edu.pdx.cs410J.dbanh.client.AirlineService;
@@ -41,11 +50,49 @@ public class AirlineServiceImpl extends RemoteServiceServlet implements AirlineS
   }
 
   @Override
-  public void saveAirline(Airline newAirline) {
+  public void saveAirline(Airline newAirline) throws IllegalArgumentException {
 	if(airline == null) {
 		airline = new Airline();
+		airline.setName(newAirline.getName());
+	} else if(!this.airline.getName().equals(newAirline.getName())) {	
+		throw new IllegalArgumentException("Airline requested does not match saved airline");
+	} 
+	
+	List<Flight> flights = new ArrayList<Flight>();
+	flights = (List<Flight>) newAirline.getFlights();
+	for(Flight flight : flights) {
+		airline.addFlight(flight);
 	}
+  }
+
+  @Override
+  public Airline searchFlights(String airlineToSearch, String src, String dest) throws IllegalArgumentException, Throwable{
+	  if(airline == null) {
+		  throw new Throwable();
+	  }
+	  
+	  List<Flight> matchingFlights = new ArrayList<Flight>();
+	  
+	  if (airline.getName().equals(airlineToSearch)) {
+		List<Flight> flights = new ArrayList<Flight>();
+		flights = (List<Flight>) airline.getFlights();
+
+		for (Flight flight : flights) {
+			if (flight.getSource().toUpperCase().equals(src.toUpperCase()) && flight.getDestination().toUpperCase().equals(dest.toUpperCase())) {
+				matchingFlights.add(flight);
+			}
+		}
+	  } else {
+		  throw new IllegalArgumentException("No airline doesn't match");
+	  }
 		
-	this.airline = newAirline;
+	  if (matchingFlights.size() > 0) {
+		  Airline matchingAirline = new Airline();
+		  matchingAirline.setName(airlineToSearch);
+		  matchingAirline.setFlights(matchingFlights);
+		  return matchingAirline;
+	  } 
+	  
+	  return null;
   }
 }
