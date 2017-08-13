@@ -7,10 +7,13 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
+
+import com.google.gwt.i18n.client.DateTimeFormat;
 
 import edu.pdx.cs410J.AbstractAirline;
 import edu.pdx.cs410J.AbstractFlight;
@@ -41,6 +44,18 @@ public class PrettyPrinter /*implements AirlineDumper<Airline>*/ {
 		}	
 		Collections.sort(listFlightsForAirline);
 		
+		Collections.sort(listFlightsForAirline, new Comparator<Flight>() {
+
+	        public int compare(Flight flight1, Flight flight2) {
+	        	 int result = flight1.getSource().compareTo(flight2.getSource());
+	         	  if(result != 0) {
+	         		  return result;
+	         	  }
+	       	  
+	       	  return flight1.getDeparture().compareTo(flight2.getDeparture());
+	        }
+	});
+		
 		List<Flight> curatedFlights = removeDuplicates(listFlightsForAirline);
 		
 
@@ -55,14 +70,14 @@ public class PrettyPrinter /*implements AirlineDumper<Airline>*/ {
 		
 		prettyText.append("\n\n");
 		
-		for(AbstractFlight flight : curatedFlights) {
+		for(Flight flight : curatedFlights) {
 			
 			prettyText.append("Flight number: " + flight.getNumber() + "\n");
 			prettyText.append("Source: " + flight.getSource() + "\n");
 			prettyText.append("Departure time: " + flight.getDepartureString() + "\n");
 			prettyText.append("Destination: " + flight.getDestination() + "\n"); 
 			prettyText.append("Arrival time: " + flight.getArrivalString() + "\n");
-			prettyText.append("Duration: " + Integer.toString(calculateDuration(flight.getDeparture(), flight.getArrival())) + " minutes\n");
+			prettyText.append("Duration: " + ((flight.getArrival().getTime() - flight.getDeparture().getTime()) / 60000) + " minutes\n");
 			prettyText.append("\n");
 		}
 	}
@@ -89,7 +104,7 @@ public class PrettyPrinter /*implements AirlineDumper<Airline>*/ {
 	
 	private int calculateDuration(Date departure, Date arrival) {
 		long diffInMillies = arrival.getTime() - departure.getTime();
-		return (int) ((diffInMillies/1000)/60);
+		return (int) (diffInMillies/6000);
 
 	}
 	

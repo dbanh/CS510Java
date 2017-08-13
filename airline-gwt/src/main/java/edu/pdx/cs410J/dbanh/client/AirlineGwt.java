@@ -312,14 +312,15 @@ public class AirlineGwt implements EntryPoint {
       @Override
       public void onSuccess(Airline airline) {
         if (airline != null) {
-			StringBuilder sb = new StringBuilder(airline.toString());
-			sb.append("\n");
-			Collection<Flight> flights = airline.getFlights();
-			for (Flight flight : flights) {
-				sb.append(flight);
-				sb.append("\n");
-			}
-			alerter.alert(sb.toString());
+//			StringBuilder sb = new StringBuilder(airline.toString());
+//			sb.append("\n");
+//			Collection<Flight> flights = airline.getFlights();
+//			for (Flight flight : flights) {
+//				sb.append(flight);
+//				sb.append("\n");
+//			}
+//			alerter.alert(sb.toString());
+        	prettyPrintAirline(airline, airlinePrettyText);
 		} else {
 			alerter.alert("No airline to display");
 		}

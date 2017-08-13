@@ -2,13 +2,8 @@ package edu.pdx.cs410J.dbanh.client;
 
 import edu.pdx.cs410J.AbstractFlight;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Locale;
-
 import com.google.gwt.i18n.client.DateTimeFormat;
-import com.ibm.icu.text.DateFormat;
 
 public class Flight extends AbstractFlight implements Comparable<Flight>
 {
@@ -20,6 +15,8 @@ public class Flight extends AbstractFlight implements Comparable<Flight>
   private Date arrival;
   private String arrivalString;
   private int number;
+  
+  static final String DATE_FORMAT_PATTERN = "MM/dd/yyyy hh:mm a";
   
   /**
    * In order for GWT to serialize this class (so that it can be sent between
@@ -89,19 +86,17 @@ public class Flight extends AbstractFlight implements Comparable<Flight>
   	  if(result != 0) {
   		  return result;
   	  }
-//  	  Locale currentLocale = new Locale("en_US");
-//  	  DateFormat formatter = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, currentLocale);
-//  	  String formattedDeparture = formatter.format(flight.departure);
-//  	  SimpleDateFormat simpleFormatter = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
-//  	  Date date;
-//
-//  	  try {
-//  		date = formatter.parse(formattedDeparture);
-//  	  } catch (ParseException e) {
-//  		return 0;
-//  	  }
-  	  
-  	  return this.getDeparture().compareTo(flight.departure);
+
+  	  Date passedInDate = new Date();
+  	  Date localDate = new Date();
+		DateTimeFormat dateTimeFormat = DateTimeFormat.getFormat(DATE_FORMAT_PATTERN);
+		try {
+			passedInDate = dateTimeFormat.parse(flight.getDepartureString());
+			localDate = dateTimeFormat.parse(this.getDepartureString());
+		} catch (IllegalArgumentException e) {
+		}
+	  
+	  return localDate.compareTo(passedInDate);
   }
 
   	public void setDepartureString(String departureString) {

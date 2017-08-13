@@ -2,6 +2,7 @@ package edu.pdx.cs410J.dbanh.server;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -64,7 +65,7 @@ public class AirlineServiceImpl extends RemoteServiceServlet implements AirlineS
 		airline.addFlight(flight);
 	}
   }
-
+  
   @Override
   public Airline searchFlights(String airlineToSearch, String src, String dest) throws IllegalArgumentException, Throwable{
 	  if(airline == null) {
