@@ -77,7 +77,7 @@ public class PrettyPrinter /*implements AirlineDumper<Airline>*/ {
 			prettyText.append("Departure time: " + flight.getDepartureString() + "\n");
 			prettyText.append("Destination: " + flight.getDestination() + "\n"); 
 			prettyText.append("Arrival time: " + flight.getArrivalString() + "\n");
-			prettyText.append("Duration: " + ((flight.getArrival().getTime() - flight.getDeparture().getTime()) / 60000) + " minutes\n");
+			prettyText.append("Duration: " + calculateDuration(flight.getDeparture(), flight.getArrival()) + " minutes\n");
 			prettyText.append("\n");
 		}
 	}
@@ -104,7 +104,7 @@ public class PrettyPrinter /*implements AirlineDumper<Airline>*/ {
 	
 	private int calculateDuration(Date departure, Date arrival) {
 		long diffInMillies = arrival.getTime() - departure.getTime();
-		return (int) (diffInMillies/6000);
+		return (int) ((diffInMillies/1000)/60);
 
 	}
 	

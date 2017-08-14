@@ -47,7 +47,7 @@ public class Flight extends AbstractFlight implements Comparable<Flight>
 
   @Override
   public Date getDeparture() {
-    return new Date();
+    return departure;
   }
   
   public void setDeparture(Date departure) {
@@ -68,7 +68,7 @@ public class Flight extends AbstractFlight implements Comparable<Flight>
   }
 
   public Date getArrival() {
-    return new Date();
+    return arrival;
   }
   
   public void setArrival(Date arrival) {
