@@ -4,22 +4,31 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Style.FontWeight;
+import com.google.gwt.dom.client.Style.TextDecoration;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.UmbrellaException;
 import com.google.gwt.i18n.shared.DateTimeFormat;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.datepicker.client.DatePicker;
+
 import edu.pdx.cs410J.AirportNames;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -127,40 +136,155 @@ public class AirlineGwt implements EntryPoint {
 
     return throwable;
   }
+  
+  private void addRightWidgets(VerticalPanel panel) {
+	    airlinePrettyText.setCharacterWidth(60);
+	    airlinePrettyText.setVisibleLines(30);
+	    
+	    Label textAreaLabel = new Label("Your results will display here:");
+	    textAreaLabel.getElement().getStyle().setFontWeight(FontWeight.BOLD);
+	    
+	    
+	    panel.add(textAreaLabel);
+	    panel.add(airlinePrettyText);
+  }
 
   private void addWidgets(VerticalPanel panel) {
 	
+	Label addFlight = new Label("ADD FLIGHT");
+	addFlight.getElement().getStyle().setFontWeight(FontWeight.BOLD);
+	addFlight.getElement().getStyle().setFontSize(14, Unit.PX);
+	addFlight.getElement().getStyle().setPaddingBottom(10, Unit.PX);
+	
+	HorizontalPanel firstRow = new HorizontalPanel();
 	final TextBox airlineName = new TextBox();
 	airlineName.setName("airlineName");
-	airlineName.getElement().setPropertyString("placeholder", "Airline name");
+	airlineName.getElement().setPropertyString("placeholder", "ex: Alaska");
+	airlineName.getElement().getStyle().setPaddingRight(15, Unit.PX);
+	Label airlineSectionLabel = new Label("Airline name: ");
+	airlineSectionLabel.getElement().getStyle().setPaddingRight(3, Unit.PX);
 	
 	final TextBox flightNumber = new TextBox();
 	flightNumber.setName("flightNumber");
-	flightNumber.getElement().setPropertyString("placeholder", "Flight number");
+	flightNumber.getElement().setPropertyString("placeholder", "ex: 42");
+	Label flightNumberSectionLabel = new Label("Flight number: ");
+	flightNumberSectionLabel.getElement().getStyle().setPaddingLeft(35, Unit.PX);
+	firstRow.add(airlineSectionLabel);
+	firstRow.add(airlineName);
+	firstRow.getElement().getStyle().setPaddingLeft(10, Unit.PX);
+	firstRow.getElement().getStyle().setPaddingBottom(2, Unit.PX);
+	firstRow.getElement().getStyle().setPaddingRight(3, Unit.PX);
+	firstRow.add(flightNumberSectionLabel);
+	firstRow.add(flightNumber);
 	
+	HorizontalPanel secondRow = new HorizontalPanel();
 	final TextBox source = new TextBox();
 	source.setName("source");
-	source.getElement().setPropertyString("placeholder", "Departure airport");
-	
-	final TextBox departure = new TextBox();
-	departure.setName("departure");
-	departure.getElement().setPropertyString("placeholder", "Departure");
-	
-	//TODO: maybe turn this into three fields for date
+	source.getElement().setPropertyString("placeholder", "ex: PDX");
+	Label sourceSectionLabel = new Label("Departure airport: ");
+	sourceSectionLabel.getElement().getStyle().setPaddingRight(3, Unit.PX);
 	
 	final TextBox destination = new TextBox();
 	destination.setName("destination");
-	destination.getElement().setPropertyString("placeholder", "Arrival airport");
+	destination.getElement().setPropertyString("placeholder", "ex: LAX");
+	Label destinationSectionLabel = new Label("Arrival airport: ");
+	destinationSectionLabel.getElement().getStyle().setPaddingLeft(20, Unit.PX);
+	destinationSectionLabel.getElement().getStyle().setPaddingRight(3, Unit.PX);
+	secondRow.add(sourceSectionLabel);
+	secondRow.add(source);
+	secondRow.add(destinationSectionLabel);
+	secondRow.add(destination);
+	secondRow.getElement().getStyle().setPaddingLeft(10, Unit.PX);
 	
-	final TextBox arrival = new TextBox();
-	arrival.setName("arrival");
-	arrival.getElement().setPropertyString("placeholder", "Arrival");
+	HorizontalPanel thirdRow = new HorizontalPanel();
+	final TextBox departureTimeHour = new TextBox();
+	departureTimeHour.setName("departureTimeHour");
+	departureTimeHour.getElement().setPropertyString("placeholder", "ex: 10");
+	departureTimeHour.getElement().getStyle().setPaddingRight(3, Unit.PX);
+	departureTimeHour.setVisibleLength(5);
+	final TextBox departureTimeMinute = new TextBox();
+	departureTimeMinute.setName("departureTimeMinute");
+	departureTimeMinute.getElement().setPropertyString("placeholder", "ex: 30");
+	departureTimeMinute.setVisibleLength(5);
+	Label departureTimeLabel = new Label("Departure time: ");
+	departureTimeLabel.getElement().getStyle().setPaddingLeft(10, Unit.PX);
+	Label colon = new Label(":");
 	
-	saveAirlineButton = new Button("Save airline");
+	final TextBox arrivalTimeHour = new TextBox();
+	arrivalTimeHour.setName("arrivalTimeHour");
+	arrivalTimeHour.getElement().setPropertyString("placeholder", "ex: 10");
+	arrivalTimeHour.getElement().getStyle().setPaddingRight(3, Unit.PX);
+	arrivalTimeHour.setVisibleLength(5);
+	final TextBox arrivalTimeMinute = new TextBox();
+	arrivalTimeMinute.setName("departureTimeMinute");
+	arrivalTimeMinute.getElement().setPropertyString("placeholder", "ex: 30");
+	arrivalTimeMinute.setVisibleLength(5);
+	Label arrivalTimeLabel = new Label("Arrival time: ");
+	arrivalTimeLabel.getElement().getStyle().setPaddingLeft(39, Unit.PX);
+	
+	final ListBox amPmDeparture = new ListBox();
+	amPmDeparture.addItem("AM");
+	amPmDeparture.addItem("PM");
+	
+	final ListBox amPmArrival = new ListBox();
+	amPmArrival.addItem("AM");
+	amPmArrival.addItem("PM");
+	
+	thirdRow.add(departureTimeLabel);
+	thirdRow.add(departureTimeHour);
+	thirdRow.add(colon);
+	thirdRow.add(departureTimeMinute);
+	thirdRow.add(amPmDeparture);
+	thirdRow.add(arrivalTimeLabel);
+	thirdRow.add(arrivalTimeHour);
+	thirdRow.add(colon);
+	thirdRow.add(arrivalTimeMinute);
+	thirdRow.add(amPmArrival);
+	thirdRow.getElement().getStyle().setPaddingBottom(2, Unit.PX);
+	
+	HorizontalPanel fourthRow = new HorizontalPanel();
+	final DatePicker departure = new DatePicker(); 
+	departure.setCurrentMonth(new Date());
+	final Label departureDateFromUI = new Label();
+	departure.addValueChangeHandler(new ValueChangeHandler<Date>(){
+		@Override
+		public void onValueChange(ValueChangeEvent<Date> arg0) {
+		      Date date = arg0.getValue();
+		      String dateString=DateTimeFormat.getFormat("MM/dd/yyyy").format(date);
+		      departureDateFromUI.setText(dateString);
+		}
+	  });
+	Label departureSectionLabel = new Label("Departure date: ");
+	departureSectionLabel.getElement().getStyle().setPaddingRight(3, Unit.PX);
+	
+	final DatePicker arrival = new DatePicker();
+	arrival.setCurrentMonth(new Date());
+	final Label arrivalDateFromUI = new Label();
+	arrival.addValueChangeHandler(new ValueChangeHandler<Date>(){
+		@Override
+		public void onValueChange(ValueChangeEvent<Date> arg0) {
+		      Date date = arg0.getValue();
+		      String dateString=DateTimeFormat.getFormat("MM/dd/yyyy").format(date);
+		      arrivalDateFromUI.setText(dateString);
+		}
+	  });
+	Label arrivalSectionLabel = new Label("Arrival date: ");
+	arrivalSectionLabel.getElement().getStyle().setPaddingRight(3, Unit.PX);
+	arrivalSectionLabel.getElement().getStyle().setPaddingLeft(40, Unit.PX);
+
+	fourthRow.add(departureSectionLabel);
+	fourthRow.add(departure);
+	fourthRow.add(arrivalSectionLabel);
+	fourthRow.add(arrival);
+	fourthRow.getElement().getStyle().setPaddingLeft(10, Unit.PX);
+	
+	
+	saveAirlineButton = new Button("Add flight");
 	saveAirlineButton.addClickHandler(new ClickHandler() {
 		@Override
 		public void onClick(ClickEvent arg0) {
-			List<String> errorList = validateAirline(airlineName.getText(), flightNumber.getText(), source.getText(), departure.getText(), destination.getText(), arrival.getText());
+			List<String> errorList = validateAirline(airlineName.getText(), flightNumber.getText(), source.getText(), departureDateFromUI.getText(), departureTimeHour.getText(),
+					departureTimeMinute.getText(), destination.getText(), arrivalDateFromUI.getText(), arrivalTimeHour.getText(), arrivalTimeMinute.getText());
 			
 			if(errorList.size() == 0) {
 				Airline airline = new Airline();
@@ -171,22 +295,46 @@ public class AirlineGwt implements EntryPoint {
 				flight.setSource(source.getText());
 				flight.setDestination(destination.getText());
 				
+				StringBuilder departureDateSb = new StringBuilder();
+				departureDateSb.append(departureDateFromUI.getText()).append(" ").append(departureTimeHour.getText()).append(":").append(departureTimeMinute.getText()).append(" ").append(amPmDeparture.getSelectedItemText());
+				
 				Date departureDate = null;
 				DateTimeFormat dateTimeFormat = DateTimeFormat.getFormat(DATE_FORMAT_PATTERN);
 				try {
-					departureDate = dateTimeFormat.parse(departure.getText());
+					departureDate = dateTimeFormat.parse(departureDateSb.toString());
 					flight.setDeparture(departureDate);
 				} catch (IllegalArgumentException e) {
 				}
-				flight.setDepartureString(departure.getText());
+				flight.setDepartureString(departureDateSb.toString());
+
+				StringBuilder arrivalDateSb = new StringBuilder();
+				arrivalDateSb.append(arrivalDateFromUI.getText()).append(" ").append(arrivalTimeHour.getText()).append(":").append(arrivalTimeMinute.getText()).append(" ").append(amPmArrival.getSelectedItemText());
 				
 				Date arrivalDate = null;
 				try {
-					arrivalDate = dateTimeFormat.parse(arrival.getText());
+					arrivalDate = dateTimeFormat.parse(arrivalDateSb.toString());
 					flight.setArrival(arrivalDate);
 				} catch (IllegalArgumentException e) {
 				}
-				flight.setArrivalString(arrival.getText());
+				flight.setArrivalString(arrivalDateSb.toString());
+				
+//				Date departureDate = null;
+//				DateTimeFormat dateTimeFormat = DateTimeFormat.getFormat(DATE_FORMAT_PATTERN);
+//				try {
+//					departureDate = dateTimeFormat.parse(departure.getValue());
+//					flight.setDeparture(departure.getValue());
+//				} catch (IllegalArgumentException e) {
+//				}
+//				flight.setDepartureString(departure.getValue()());
+				
+//				Date arrivalDate = null;
+//				try {
+//					arrivalDate = dateTimeFormat.parse(arrival.getText());
+//					flight.setArrival(arrival.getValue());
+//				} catch (IllegalArgumentException e) {
+//				}
+//				flight.setArrivalString(arrival.getText());
+				
 				airline.addFlight(flight);
 				saveAirline(airline);
 			} else {
@@ -200,6 +348,10 @@ public class AirlineGwt implements EntryPoint {
 			}
 		}
 	});
+	
+	HorizontalPanel fifthRow = new HorizontalPanel();
+	fifthRow.add(saveAirlineButton);
+	fifthRow.getElement().getStyle().setPaddingLeft(10, Unit.PX);
 	  
     showAirlineButton = new Button("Display all flights for airline");
     showAirlineButton.addClickHandler(new ClickHandler() {
@@ -209,60 +361,109 @@ public class AirlineGwt implements EntryPoint {
       }
     });
     
+	Label searchFlight = new Label("SEARCH FOR FLIGHTS");
+	searchFlight.getElement().getStyle().setFontWeight(FontWeight.BOLD);
+	searchFlight.getElement().getStyle().setFontSize(14, Unit.PX);
+	searchFlight.getElement().getStyle().setPaddingBottom(10, Unit.PX);
+	searchFlight.getElement().getStyle().setPaddingTop(30, Unit.PX);
+	
+	HorizontalPanel sixthRow = new HorizontalPanel();
 	final TextBox airlineToSearch = new TextBox();
 	airlineToSearch.setName("airlineToSearch");
-	airlineToSearch.getElement().setPropertyString("placeholder", "Airline name");
+	airlineToSearch.getElement().setPropertyString("placeholder", "ex: Alaska");
+	airlineToSearch.getElement().getStyle().setPaddingRight(15, Unit.PX);
+	Label airlineToSearchSectionLabel = new Label("Airline name: ");
+	airlineToSearchSectionLabel.getElement().getStyle().setPaddingRight(3, Unit.PX);
+	sixthRow.add(airlineToSearchSectionLabel);
+	sixthRow.add(airlineToSearch);
+	sixthRow.getElement().getStyle().setPaddingLeft(10, Unit.PX);
 	
+	HorizontalPanel seventhRow = new HorizontalPanel();
 	final TextBox sourceToSearch = new TextBox();
 	sourceToSearch.setName("sourceToSearch");
-	sourceToSearch.getElement().setPropertyString("placeholder", "Departure airport");
+	sourceToSearch.getElement().setPropertyString("placeholder", "ex: PDX");
+	Label sourceToSearchSectionLabel = new Label("Departure airport: ");
+	sourceToSearchSectionLabel.getElement().getStyle().setPaddingRight(3, Unit.PX);
 	
 	final TextBox destinationToSearch = new TextBox();
 	destinationToSearch.setName("destinationToSearch");
-	destinationToSearch.getElement().setPropertyString("placeholder", "Destination airport");
+	destinationToSearch.getElement().setPropertyString("placeholder", "Arrival airport");
+	Label destinationToSearchSectionLabel = new Label("Arrival airport: ");
+	destinationToSearchSectionLabel.getElement().getStyle().setPaddingLeft(20, Unit.PX);
+	destinationToSearchSectionLabel.getElement().getStyle().setPaddingRight(3, Unit.PX);
+	seventhRow.add(sourceToSearchSectionLabel);
+	seventhRow.add(sourceToSearch);
+	seventhRow.add(destinationToSearchSectionLabel);
+	seventhRow.add(destinationToSearch);
+	seventhRow.getElement().getStyle().setPaddingLeft(10, Unit.PX);
+	
+//	final TextBox sourceToSearch = new TextBox();
+//	sourceToSearch.setName("sourceToSearch");
+//	sourceToSearch.getElement().setPropertyString("placeholder", "Departure airport");
+//	
+//	final TextBox destinationToSearch = new TextBox();
+//	destinationToSearch.setName("destinationToSearch");
+//	destinationToSearch.getElement().setPropertyString("placeholder", "Destination airport");
 
 	searchFlightsButton = new Button("Search for flights");
 	searchFlightsButton.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent clickEvent) {
-        searchFlights(airlineToSearch.getText(), sourceToSearch.getText(), destinationToSearch.getText());
+			List<String> errorList = validateSearch(airlineToSearch.getText(), sourceToSearch.getText(), destinationToSearch.getText());
+			
+			if(errorList.size() == 0) {
+				searchFlights(airlineToSearch.getText(), sourceToSearch.getText(), destinationToSearch.getText());
+			} else {
+				StringBuilder sb = new StringBuilder();
+		        for (String error : errorList) {
+		          sb.append(error);
+		          sb.append("\n");
+		        }
+		        alerter.alert(sb.toString());
+			}
       }
+				
     });
-
-    showDeclaredExceptionButton = new Button("Show declared exception");
-    showDeclaredExceptionButton.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent clickEvent) {
-        showDeclaredException();
-      }
-    });
-
-    showClientSideExceptionButton= new Button("Show client-side exception");
-    showClientSideExceptionButton.addClickHandler(new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent clickEvent) {
-        throwClientSideException();
-      }
-    });
+	
+	HorizontalPanel eigthRow = new HorizontalPanel();
+	eigthRow.add(searchFlightsButton);
+	eigthRow.getElement().getStyle().setPaddingLeft(10, Unit.PX);
+	
+	HorizontalPanel ninthRow = new HorizontalPanel();
+	Label returnAllFlights = new Label("SHOW ALL FLIGHTS");
+	returnAllFlights.getElement().getStyle().setFontWeight(FontWeight.BOLD);
+	returnAllFlights.getElement().getStyle().setFontSize(14, Unit.PX);
+	returnAllFlights.getElement().getStyle().setPaddingBottom(10, Unit.PX);
+	returnAllFlights.getElement().getStyle().setPaddingTop(30, Unit.PX);
+	ninthRow.add(returnAllFlights);
+	
+	HorizontalPanel tenthRow = new HorizontalPanel();
+	tenthRow.add(showAirlineButton);
+	tenthRow.getElement().getStyle().setPaddingLeft(10, Unit.PX);
     
-    airlinePrettyText.setCharacterWidth(80);
-    airlinePrettyText.setVisibleLines(20);
-    
-
-    panel.add(airlineName);
-    panel.add(flightNumber);
-    panel.add(source);
-    panel.add(departure);
-    panel.add(destination);
-    panel.add(arrival);
-    panel.add(saveAirlineButton);
-    panel.add(showAirlineButton);
-    panel.add(airlineToSearch);
-    panel.add(sourceToSearch);
-    panel.add(destinationToSearch);
-    panel.add(searchFlightsButton);
-    panel.add(airlinePrettyText);
-    panel.add(showClientSideExceptionButton);
+    panel.add(addFlight);
+//    panel.add(airlineSection);
+//    panel.add(flightNumberSection);
+    panel.add(firstRow);
+    panel.add(secondRow);
+//    panel.add(destinationSection);
+//    panel.add(sourceSection);
+    panel.add(thirdRow);
+    panel.add(fourthRow);
+//    panel.add(departureSection);
+//    panel.add(arrivalSection);
+    panel.add(fifthRow);
+//    panel.add(showAirlineButton);
+    panel.add(searchFlight);
+    panel.add(sixthRow);
+    panel.add(seventhRow);
+    panel.add(eigthRow);
+    panel.add(ninthRow);
+    panel.add(tenthRow);
+//    panel.add(airlineToSearch);
+//    panel.add(sourceToSearch);
+//    panel.add(destinationToSearch);
+//    panel.add(searchFlightsButton);
   }
 
   private void throwClientSideException() {
@@ -381,7 +582,7 @@ public class AirlineGwt implements EntryPoint {
 	    airlinePrettyText.setText(pretty.getPrettyText());
   }
   
-  private List<String> validateAirline(String airlineName, String flightNumber, String src, String departure, String destination, String arrival) {
+  private List<String> validateAirline(String airlineName, String flightNumber, String src, String departureDate, String departureHour, String departureMinute, String destination, String arrivalDate, String arrivalHour, String arrivalMinute) {
 	  
 		List<String> errorList = new ArrayList<String>();
 		
@@ -407,29 +608,38 @@ public class AirlineGwt implements EntryPoint {
 			errorList.add("ERROR: Departure airport is required");
 		}
 		
-		if(!departure.isEmpty()) {
-//			boolean validDate = validateDate(args[i]);
-//			boolean validTime = validateTime(args[i+1]);
-//			boolean validAmPm = validateAmPm(args[i+2]);
-//			
-//			if(validDate == false) {
-//				errorList.add("ERROR: Departure date is not in the correct format. (Correct format: MM/DD/YYYY)");
-//			}
-//			if(validTime == false || validAmPm == false) {
-//				errorList.add("ERROR: Departure time is not in the correct format. (Correct format: HH:MM AM/PM)");
-//			}
-			
-//			else {
-//				String sb = new StringBuilder(args[i]).append(" ").append(args[i+1]).append(" ").append(args[i+2]).toString();
-				Date date = null;
-				DateTimeFormat dateTimeFormat = DateTimeFormat.getFormat(DATE_FORMAT_PATTERN);
-				try {
-					date = dateTimeFormat.parse(departure);
-				} catch (IllegalArgumentException e) {
-					errorList.add("ERROR: Depature date/time is not in the correct format. (Correct format: MM/DD/YYYY HH:MM AM/PM)");
+		if(departureDate.isEmpty()) {
+			errorList.add("ERROR: Departure date is required");
+		}
+		
+		if(!departureHour.isEmpty()) {
+			int hour;
+			try {
+				hour = Integer.parseInt(departureHour);
+				if(hour > 12) {
+					errorList.add("ERROR: Departure time, HOUR, must be 12 or smaller. ");
 				}
+			} catch (NumberFormatException e) {
+				errorList.add("ERROR: Departure time, HOUR, must be a digit.");
+			}
+
 		} else {
-			errorList.add("ERROR: Departure date/time is required");
+			errorList.add("ERROR: Departure time, HOUR, is required");
+		}
+		
+		if(!departureMinute.isEmpty()) {
+			int minute;
+			try {
+				minute = Integer.parseInt(departureMinute);
+				if(minute > 59) {
+					errorList.add("ERROR: Departure time, MINUTE, must be 59 or smaller. ");
+				}
+			} catch (NumberFormatException e) {
+				errorList.add("ERROR: Departure time, MINUTE, must be a digit.");
+			}
+
+		} else {
+			errorList.add("ERROR: Departure time, MINUTE, is required");
 		}
 		
 		if(!destination.isEmpty()) {
@@ -440,19 +650,80 @@ public class AirlineGwt implements EntryPoint {
 			errorList.add("ERROR: Destination airport required");
 		}
 		
-		if(!arrival.isEmpty()) {
-			Date date = null;
-			DateTimeFormat dateTimeFormat = DateTimeFormat.getFormat(DATE_FORMAT_PATTERN);
-			try {
-				date = dateTimeFormat.parse(arrival);
-			} catch (IllegalArgumentException e) {
-				errorList.add("ERROR: Arrival date/time is not in the correct format. (Correct format: MM/DD/YYYY HH:MM AM/PM)");
-			}
-		} else {
-			errorList.add("ERROR: Arrival date/time is required");
+		if(arrivalDate.isEmpty()) {
+			errorList.add("ERROR: Arrival date is required");
 		}
 		
+		if(!arrivalHour.isEmpty()) {
+			int hour;
+			try {
+				hour = Integer.parseInt(arrivalHour);
+				if(hour > 12) {
+					errorList.add("ERROR: Arrival time, HOUR, must be 12 or smaller. ");
+				}
+			} catch (NumberFormatException e) {
+				errorList.add("ERROR: Arrival time, HOUR, must be a digit.");
+			}
+
+		} else {
+			errorList.add("ERROR: Departure time, HOUR, is required");
+		}
+		
+		if(!arrivalMinute.isEmpty()) {
+			int minute;
+			try {
+				minute = Integer.parseInt(arrivalMinute);
+				if(minute > 59) {
+					errorList.add("ERROR: Arrival time, MINUTE, must be 59 or smaller. ");
+				}
+			} catch (NumberFormatException e) {
+				errorList.add("ERROR: Arrival time, MINUTE, must be a digit.");
+			}
+
+		} else {
+			errorList.add("ERROR: Arrival time, MINUTE, is required");
+		}
+		
+//		if(!arrival.isEmpty()) {
+//			Date date = null;
+//			DateTimeFormat dateTimeFormat = DateTimeFormat.getFormat(DATE_FORMAT_PATTERN);
+//			try {
+//				date = dateTimeFormat.parse(arrival);
+//			} catch (IllegalArgumentException e) {
+//				errorList.add("ERROR: Arrival date/time is not in the correct format. (Correct format: MM/DD/YYYY HH:MM AM/PM)");
+//			}
+//		} else {
+//			errorList.add("ERROR: Arrival date/time is required");
+//		}
+		
 		return errorList;  
+  }
+  
+  private List<String> validateSearch(String airlineName, String src, String destination) {
+	  
+		List<String> errorList = new ArrayList<String>();
+		
+		if(airlineName.isEmpty()) {
+			errorList.add("ERROR: Airline name required");
+		}
+		
+		if(!src.isEmpty()) {
+			if(!validateAirportCode(src)) {
+				errorList.add("ERROR: Source airport code is not valid. Valid codes are 3 characters long, may only contains letters, and must be a real code.");
+			}
+		} else {
+			errorList.add("ERROR: Departure airport is required");
+		}
+		
+		if(!destination.isEmpty()) {
+			if(!validateAirportCode(destination)) {
+				errorList.add("ERROR: Arrival airport code is not valid. Valid codes are 3 characters long, may only contains letters, and must be a real code.");
+			}
+		} else {
+			errorList.add("ERROR: Arrival airport is required");
+		}
+		
+		return errorList;
   }
 
 /**
@@ -491,10 +762,28 @@ private static boolean validateAirportCode(String airportCode) {
 
   private void setupUI() {
     RootPanel rootPanel = RootPanel.get();
-    VerticalPanel panel = new VerticalPanel();
-    rootPanel.add(panel);
+    VerticalPanel verticalPanelLeft = new VerticalPanel();
+    addWidgets(verticalPanelLeft);
+    
+    VerticalPanel verticalPanelRight = new VerticalPanel();
+    addRightWidgets(verticalPanelRight);
+    verticalPanelRight.getElement().getStyle().setPaddingLeft(120, Unit.PX);
+    
+    HorizontalPanel horizontalPanel = new HorizontalPanel();
+    horizontalPanel.add(verticalPanelLeft);
+    horizontalPanel.add(verticalPanelRight);
+    horizontalPanel.getElement().getStyle().setPaddingLeft(20, Unit.PX);
+    
+    Label header = new Label("AIRLINE APP");
+    header.getElement().getStyle().setFontSize(30, Unit.PX);
+    header.getElement().getStyle().setFontWeight(FontWeight.BOLDER);
+    header.getElement().getStyle().setPaddingBottom(20, Unit.PX);
+    header.getElement().getStyle().setPaddingLeft(20, Unit.PX);
+    header.getElement().getStyle().setPaddingTop(20, Unit.PX);
+    rootPanel.add(header);
+    rootPanel.add(horizontalPanel);
 
-    addWidgets(panel);
+
   }
 
   private void setUpUncaughtExceptionHandler() {
