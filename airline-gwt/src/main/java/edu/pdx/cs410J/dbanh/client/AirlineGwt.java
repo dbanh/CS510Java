@@ -5,7 +5,6 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style.FontWeight;
-import com.google.gwt.dom.client.Style.TextDecoration;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -54,10 +53,7 @@ public class AirlineGwt implements EntryPoint {
   Button searchFlightsButton;
 
   @VisibleForTesting
-  Button showDeclaredExceptionButton;
-
-  @VisibleForTesting
-  Button showClientSideExceptionButton;
+  Button helpMeButton;
   
   @VisibleForTesting
   TextArea airlinePrettyText = new TextArea();
@@ -123,6 +119,25 @@ public class AirlineGwt implements EntryPoint {
 	  sb.append("Airline requested not found on server");
 	  this.alerter.alert(sb.toString());
   }
+  
+
+  private void readMe() {
+	  StringBuilder sb = new StringBuilder();
+
+	  sb.append("This application allows the user to keep track of flights for an airline.\n"
+	  		+ "The user can add flights to the server for an airline, search the server\n"
+	  		+ "for flights, and view all flights for an airline. This application can only\n"
+	  		+ "keep track of flights for one airline for each session.\n"
+	  		+ "\nFlights can be added by entering the:\n"
+	  		+ "1) Airline name\n2) Flight number\n3) Departure airport\n4) Arrival airport\n"
+	  		+ "5) Departure time (hh:mm am/pm)\n6) Arrival time (hh:mm am/pm)\n7) Departure date\n8) Arrival date\n"
+	  		+ "\nFlights can be searched by entering the:\n"
+	  		+ "1) Airline name\n2) Departure airport\n3) Arrival airport\n"
+	  		+ "\nFlights are sorted alphabetically by their departure airport followed by\n"
+	  		+ "the departure time. Duplicate flights are also removed.");
+	  
+	  this.alerter.alert(sb.toString());
+  }
 
 
   private Throwable unwrapUmbrellaException(Throwable throwable) {
@@ -143,10 +158,24 @@ public class AirlineGwt implements EntryPoint {
 	    
 	    Label textAreaLabel = new Label("Your results will display here:");
 	    textAreaLabel.getElement().getStyle().setFontWeight(FontWeight.BOLD);
+	    HorizontalPanel helpMePanel = new HorizontalPanel();
 	    
+	    helpMeButton = new Button("HELP! Click here for README");
+	    helpMeButton.addClickHandler(new ClickHandler() {
+
+			@Override
+			public void onClick(ClickEvent arg0) {
+				readMe();
+			}
+	    	
+	    });
+	    helpMePanel.add(helpMeButton);
+	    helpMePanel.getElement().getStyle().setPaddingLeft(250, Unit.PX);
+	    helpMePanel.getElement().getStyle().setPaddingTop(75, Unit.PX);
 	    
 	    panel.add(textAreaLabel);
 	    panel.add(airlinePrettyText);
+	    panel.add(helpMePanel);
   }
 
   private void addWidgets(VerticalPanel panel) {
@@ -208,7 +237,10 @@ public class AirlineGwt implements EntryPoint {
 	departureTimeMinute.setVisibleLength(5);
 	Label departureTimeLabel = new Label("Departure time: ");
 	departureTimeLabel.getElement().getStyle().setPaddingLeft(10, Unit.PX);
-	Label colon = new Label(":");
+	Label colon1 = new Label(":");
+	colon1.getElement().getStyle().setFontWeight(FontWeight.BOLD);
+	Label colon2 = new Label(":");
+	colon2.getElement().getStyle().setFontWeight(FontWeight.BOLD);
 	
 	final TextBox arrivalTimeHour = new TextBox();
 	arrivalTimeHour.setName("arrivalTimeHour");
@@ -220,7 +252,7 @@ public class AirlineGwt implements EntryPoint {
 	arrivalTimeMinute.getElement().setPropertyString("placeholder", "ex: 30");
 	arrivalTimeMinute.setVisibleLength(5);
 	Label arrivalTimeLabel = new Label("Arrival time: ");
-	arrivalTimeLabel.getElement().getStyle().setPaddingLeft(39, Unit.PX);
+	arrivalTimeLabel.getElement().getStyle().setPaddingLeft(34, Unit.PX);
 	
 	final ListBox amPmDeparture = new ListBox();
 	amPmDeparture.addItem("AM");
@@ -232,12 +264,12 @@ public class AirlineGwt implements EntryPoint {
 	
 	thirdRow.add(departureTimeLabel);
 	thirdRow.add(departureTimeHour);
-	thirdRow.add(colon);
+	thirdRow.add(colon1);
 	thirdRow.add(departureTimeMinute);
 	thirdRow.add(amPmDeparture);
 	thirdRow.add(arrivalTimeLabel);
 	thirdRow.add(arrivalTimeHour);
-	thirdRow.add(colon);
+	thirdRow.add(colon2);
 	thirdRow.add(arrivalTimeMinute);
 	thirdRow.add(amPmArrival);
 	thirdRow.getElement().getStyle().setPaddingBottom(2, Unit.PX);
@@ -387,7 +419,7 @@ public class AirlineGwt implements EntryPoint {
 	
 	final TextBox destinationToSearch = new TextBox();
 	destinationToSearch.setName("destinationToSearch");
-	destinationToSearch.getElement().setPropertyString("placeholder", "Arrival airport");
+	destinationToSearch.getElement().setPropertyString("placeholder", "ex: LAX");
 	Label destinationToSearchSectionLabel = new Label("Arrival airport: ");
 	destinationToSearchSectionLabel.getElement().getStyle().setPaddingLeft(20, Unit.PX);
 	destinationToSearchSectionLabel.getElement().getStyle().setPaddingRight(3, Unit.PX);
@@ -442,28 +474,17 @@ public class AirlineGwt implements EntryPoint {
 	tenthRow.getElement().getStyle().setPaddingLeft(10, Unit.PX);
     
     panel.add(addFlight);
-//    panel.add(airlineSection);
-//    panel.add(flightNumberSection);
     panel.add(firstRow);
     panel.add(secondRow);
-//    panel.add(destinationSection);
-//    panel.add(sourceSection);
     panel.add(thirdRow);
     panel.add(fourthRow);
-//    panel.add(departureSection);
-//    panel.add(arrivalSection);
     panel.add(fifthRow);
-//    panel.add(showAirlineButton);
     panel.add(searchFlight);
     panel.add(sixthRow);
     panel.add(seventhRow);
     panel.add(eigthRow);
     panel.add(ninthRow);
     panel.add(tenthRow);
-//    panel.add(airlineToSearch);
-//    panel.add(sourceToSearch);
-//    panel.add(destinationToSearch);
-//    panel.add(searchFlightsButton);
   }
 
   private void throwClientSideException() {
@@ -551,6 +572,7 @@ public class AirlineGwt implements EntryPoint {
 
 		@Override
 		public void onFailure(Throwable t) {
+			airlinePrettyText.setText("");
 			if(t instanceof IllegalArgumentException) {
 				alertOnFailureToSearchFlights();
 			} else {
@@ -563,6 +585,7 @@ public class AirlineGwt implements EntryPoint {
 			if(airline != null) {
 				prettyPrintAirline(airline, airlinePrettyText);
 			} else {
+				airlinePrettyText.setText("");
 				alertOnFailureToFindFlights();
 			}
 		}
